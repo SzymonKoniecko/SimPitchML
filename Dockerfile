@@ -15,11 +15,11 @@ COPY src ./src
 COPY proto ./proto
 
 #  gRPC 
-RUN python -m grpc_tools.protoc \
-    -I./proto \
-    --python_out=./src \
-    --grpc_python_out=./src \
-    ./proto/prediction.proto
+#RUN python -m grpc_tools.protoc \
+#    -I./proto \
+#    --python_out=./src \
+#    --grpc_python_out=./src \
+#    ./proto/prediction.proto
 
 
 CMD ["python", "-m", "src.main"]
