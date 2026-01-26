@@ -11,7 +11,7 @@ load_dotenv()
 @dataclass(frozen=True)
 class GrpcConfig:
     server_host: str = os.getenv("GRPC_SERVER_HOST", "localhost")
-    server_port: int = int(os.getenv("GRPC_SERVER_PORT", "50051"))
+    server_port: int = int(os.getenv("GRPC_SERVER_PORT", "40033"))
     timeout_seconds: float = float(os.getenv("GRPC_TIMEOUT", "30"))
 
     @property

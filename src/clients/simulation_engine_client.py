@@ -28,18 +28,18 @@ class SimulationEngineClient(BaseGrpcClient):
         self.stub = service_pb2_grpc.SimulationEngineServiceStub(self.channel)
 
     async def get_all_simulation_overviews(
-        self, page_number: int = 0, page_size: int = 10
+        self, page_number: int = 0, page_size: int = 100
     ) -> Optional[PagedResponse[SimulationOverview]]:
         """
         RPC: GetAllSimulationOverviews(PagedRequestGrpc) -> SimulationOverviewsPagedResponse
         """
         try:
             req = commonTypes_pb2.PagedRequestGrpc(
-                page_number=page_number,
-                page_size=page_size,
+                offset=page_number,
+                limit=page_size,
+                sorting_method=None
             )
             resp = await self.stub.GetAllSimulationOverviews(req)
-
             items = [
                 SimulationOverview(
                     id=o.id,
@@ -47,14 +47,14 @@ class SimulationEngineClient(BaseGrpcClient):
                     league_strengths=o.league_strengths,
                     prior_league_strength=o.prior_league_strength,
                 )
-                for o in resp.overviews
+                for o in resp.items
             ]
 
             return PagedResponse(
                 items=items,
-                total_count=resp.total_count,
-                sorting_option=resp.sorting_option,
-                sorting_order=resp.sorting_order,
+                total_count=resp.paged.total_count,
+                sorting_option=resp.paged.sorting_option,
+                sorting_order=resp.paged.sorting_order,
             )
         except grpc.RpcError as e:
             logger.error("GetAllSimulationOverviews failed: %s", self._format_rpc_error(e))

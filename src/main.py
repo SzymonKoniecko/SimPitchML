@@ -2,7 +2,7 @@ import asyncio
 
 from src.clients import SimulationEngineClient
 from src.utils import config, get_logger
-
+from src.models import PagedResponse
 logger = get_logger(__name__)
 
 
@@ -15,9 +15,9 @@ async def main():
             logger.error("No response (error or empty).")
             return
 
-        logger.info("Total=%s pages=%s", page.total_count, page.total_pages)
+        logger.info("Total={page.total_count} pages={page.sorting_option}")
         for item in page.items:
-            logger.info("Simulation %s status=%s", item.simulation_id, item.status)
+            logger.info("Simulation {item.id} - created at={item.created_date}")
 
 
 if __name__ == "__main__":
