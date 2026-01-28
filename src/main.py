@@ -1,24 +1,32 @@
-import asyncio
+"""
+src/main.py
+"""
+import uvicorn
+from fastapi import FastAPI
+from src.adapters.api.routers import simulation_router
+from src.core.config import config
+from src.core.logger import get_logger
+import os
+from dotenv import load_dotenv
 
-from src.clients import SimulationEngineClient
-from src.utils import config, get_logger
-from src.models import PagedResponse
+load_dotenv(override=True)
 logger = get_logger(__name__)
 
+def create_app() -> FastAPI:
+    app = FastAPI(title="SimPitch Client API")
+    
+    # Rejestracja routerów
+    app.include_router(simulation_router.router, prefix="/api/v1", tags=["simulations"])
+    
+    return app
 
-async def main():
-    logger.info("Starting client, target=%s", config.grpc.address)
-
-    async with SimulationEngineClient() as client:
-        page = await client.get_all_simulation_overviews(page_number=0, page_size=5)
-        if not page:
-            logger.error("No response (error or empty).")
-            return
-
-        logger.info("Total={page.total_count} pages={page.sorting_option}")
-        for item in page.items:
-            logger.info("Simulation {item.id} - created at={item.created_date}")
-
+app = create_app()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    logger.info(f"Starting API server")
+    uvicorn.run(
+        "src.main:app", 
+        host=os.getenv("FASTAPI_SEVER_HOST", "0.0.0.0"), 
+        port=int(os.getenv("FASTAPI_SEVER_PORT", "8000")), 
+        reload=True
+    )

@@ -6,8 +6,8 @@ generated_dir = os.path.join(os.path.dirname(__file__), "generated")
 if generated_dir not in sys.path:
     sys.path.append(generated_dir)
 
-from src.utils import config, get_logger
-from src.clients import SimulationEngineClient
+from src.core import config, get_logger
+from src.adapters.grpc.client.simulation_engine import SimulationEngineClient
 
 __all__ = [
     "SimulationEngineClient",

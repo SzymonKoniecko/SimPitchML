@@ -1,0 +1,1 @@
+# # Abstrakcyjne repozytoria (Protocol/ABC)
