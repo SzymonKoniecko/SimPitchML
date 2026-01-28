@@ -1,6 +1,4 @@
 """
-src/adapters/grpc/client/simulation.py
-
 Klient gRPC do serwisu SimulationEngine.
 """
 from __future__ import annotations
@@ -21,7 +19,7 @@ class SimulationEngineClient(BaseGrpcClient):
         super().__init__(grpc_config)
         self.stub = service_pb2_grpc.SimulationEngineServiceStub(self.channel)
 
-    async def get_all_simulation_overviews(
+    async def get_paged_simulation_overviews(
         self, page_number: int = 0, page_size: int = 100
     ) -> Optional[PagedResponse[SimulationOverview]]:
         """
@@ -56,7 +54,7 @@ class SimulationEngineClient(BaseGrpcClient):
             logger.error(f"GetAllSimulationOverviews failed: {self._format_rpc_error(e)}")
             return None
 
-    async def iter_all_simulation_overviews(
+    async def get_paged_simulation_overviews(
         self, page_size: int = 50
     ) -> AsyncIterator[SimulationOverview]:
         """
@@ -65,7 +63,7 @@ class SimulationEngineClient(BaseGrpcClient):
         page_number = 0
         while True:
             
-            page = await self.get_all_simulation_overviews(page_number, page_size)
+            page = await self.get_paged_simulation_overviews(page_number, page_size)
             if not page or not page.items:
                 break
 
@@ -76,3 +74,4 @@ class SimulationEngineClient(BaseGrpcClient):
                 break
                 
             page_number += 1
+    

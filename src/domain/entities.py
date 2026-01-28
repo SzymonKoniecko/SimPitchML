@@ -13,6 +13,16 @@ class SimulationOverview:
     league_strengths: str
     prior_league_strength: float
 
+@dataclass(frozen=True)
+class IterationResult:
+    id: str
+    simulation_id: str
+    iteration_index: int
+    start_date: str
+    execution_time: str
+    team_strengths: str
+    simulated_match_rounds: str
+
 
 @dataclass(frozen=True)
 class PagedResponse(Generic[T]):
