@@ -3,6 +3,7 @@ Klient gRPC do serwisu IterationResult
 """
 from __future__ import annotations
 from typing import Optional
+import os
 import grpc
 
 # Zaktualizowane importy
@@ -14,70 +15,83 @@ from src.core import get_logger, SimulationGrpcConfig
 
 logger = get_logger(__name__)
 
+try:
+    BATCH_LIMIT = int(os.getenv("GRPC_PAGINATION_LIMIT", "100"))
+except ValueError:
+    BATCH_LIMIT = 100
+
 class IterationResultClient(BaseGrpcClient):
     def __init__(self, grpc_config: Optional[SimulationGrpcConfig] = None):
         super().__init__(grpc_config)
-        # Upewnij się, że BaseGrpcClient tworzy kanał asynchroniczny (grpc.aio.insecure_channel)
         self.stub = service_pb2_grpc.IterationResultServiceStub(self.channel)
 
     async def get_all_iterationResults_BySimulationId(
             self, simulation_id: str
         ) -> Optional[PagedResponse[IterationResult]]:
-        """
-        RPC: GetIterationResultsBySimulationId (Server Streaming)
-        """
+        all_items = []
+        current_offset = 0
+        final_total_count = 0
+        final_sorting_option = ""
+        final_sorting_order = ""
+        
         try:
-            paged_req = commonTypes_pb2.PagedRequestGrpc(
-                offset=0,
-                limit=5,
-                sorting_method=None
-            )
-            req = requests_pb2.IterationResultsBySimulationIdRequest(
-                simulation_id=simulation_id,
-                paged_request=paged_req
-            )
-            
-            # W grpc.aio wywołanie metody strumieniującej zwraca obiekt, po którym
-            # iterujemy asynchronicznie.
-            response_stream = self.stub.GetIterationResultsBySimulationId(req)
-            
-            all_items = []
-            last_paged_info = None
-
-            # UŻYJ async for!
-            async for resp in response_stream:
-                items = [
-                    IterationResult(
-                        id=o.id,
-                        simulation_id=o.simulation_id,
-                        iteration_index=o.iteration_index,
-                        start_date=o.start_date,
-                        execution_time=o.execution_time,
-                        team_strengths=o.team_strengths,
-                        simulated_match_rounds=o.simulated_match_rounds,
-                    )
-                    for o in resp.items
-                ]
-                all_items.extend(items)
-                
-                if resp.HasField('paged'):
-                    last_paged_info = resp.paged
-
-            if last_paged_info is None:
-                return PagedResponse(
-                    items=[], 
-                    total_count=0, 
-                    sorting_option="", 
-                    sorting_order=""
+            while True:
+                paged_req = commonTypes_pb2.PagedRequestGrpc(
+                    offset=current_offset,
+                    limit=BATCH_LIMIT,
+                    sorting_method=None
                 )
+                
+                req = requests_pb2.IterationResultsBySimulationIdRequest(
+                    simulation_id=simulation_id,
+                    paged_request=paged_req
+                )
+                
+                response_stream = self.stub.GetIterationResultsBySimulationId(req)
+                
+                items_in_this_batch = 0
+                batch_paged_info = None
+
+                async for resp in response_stream:
+                    mapped_items = [
+                        IterationResult(
+                            id=o.id,
+                            simulation_id=o.simulation_id,
+                            iteration_index=o.iteration_index,
+                            start_date=o.start_date,
+                            execution_time=o.execution_time,
+                            team_strengths=o.team_strengths,
+                            simulated_match_rounds=o.simulated_match_rounds,
+                        )
+                        for o in resp.items
+                    ]
+                    all_items.extend(mapped_items)
+                    items_in_this_batch += len(mapped_items)
+                    
+                    if resp.HasField('paged'):
+                        batch_paged_info = resp.paged
+
+                # Aktualizacja metadanych z ostatniej paczki
+                if batch_paged_info:
+                    final_total_count = batch_paged_info.total_count
+                    final_sorting_option = batch_paged_info.sorting_option
+                    final_sorting_order = batch_paged_info.sorting_order
+
+                if items_in_this_batch < BATCH_LIMIT:
+                    break
+                
+                current_offset += BATCH_LIMIT
+                
+                if final_total_count > 0 and len(all_items) >= final_total_count:
+                    break
 
             return PagedResponse(
                 items=all_items,
-                total_count=last_paged_info.total_count,
-                sorting_option=last_paged_info.sorting_option,
-                sorting_order=last_paged_info.sorting_order,
+                total_count=final_total_count, # lub len(all_items)
+                sorting_option=final_sorting_option,
+                sorting_order=final_sorting_order,
             )
-            
+
         except grpc.RpcError as e:
             logger.error(f"GetIterationResultsBySimulationId failed: {self._format_rpc_error(e)}")
             return None
