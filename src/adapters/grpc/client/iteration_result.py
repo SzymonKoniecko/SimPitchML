@@ -2,7 +2,7 @@
 Klient gRPC do serwisu IterationResult
 """
 from __future__ import annotations
-from typing import Optional, AsyncIterator
+from typing import Optional
 import grpc
 
 # Zaktualizowane importy
@@ -17,46 +17,67 @@ logger = get_logger(__name__)
 class IterationResultClient(BaseGrpcClient):
     def __init__(self, grpc_config: Optional[SimulationGrpcConfig] = None):
         super().__init__(grpc_config)
+        # Upewnij się, że BaseGrpcClient tworzy kanał asynchroniczny (grpc.aio.insecure_channel)
         self.stub = service_pb2_grpc.IterationResultServiceStub(self.channel)
 
     async def get_all_iterationResults_BySimulationId(
-            self, simulationId
-        )-> Optional[PagedResponse[IterationResult]]:
+            self, simulation_id: str
+        ) -> Optional[PagedResponse[IterationResult]]:
         """
-        RPC: GetIterationResultsBySimulationId
+        RPC: GetIterationResultsBySimulationId (Server Streaming)
         """
         try:
-            pagedReq = commonTypes_pb2.PagedRequestGrpc(
+            paged_req = commonTypes_pb2.PagedRequestGrpc(
                 offset=0,
                 limit=5,
                 sorting_method=None
             )
             req = requests_pb2.IterationResultsBySimulationIdRequest(
-                simulation_id=simulationId,
-                paged_request=pagedReq
+                simulation_id=simulation_id,
+                paged_request=paged_req
             )
-            resp = self.stub.GetIterationResultsBySimulationId(req)
             
-            # Mapowanie proto -> domain entity
-            items = [
-                IterationResult(
-                    id=o.id,
-                    simulation_id=o.simulation_id,
-                    iteration_index=o.iteration_index,
-                    start_date=o.start_date,
-                    execution_time=o.execution_time,
-                    team_strengths=o.team_strengths,
-                    simulated_match_rounds=o.simulated_match_rounds,
+            # W grpc.aio wywołanie metody strumieniującej zwraca obiekt, po którym
+            # iterujemy asynchronicznie.
+            response_stream = self.stub.GetIterationResultsBySimulationId(req)
+            
+            all_items = []
+            last_paged_info = None
+
+            # UŻYJ async for!
+            async for resp in response_stream:
+                items = [
+                    IterationResult(
+                        id=o.id,
+                        simulation_id=o.simulation_id,
+                        iteration_index=o.iteration_index,
+                        start_date=o.start_date,
+                        execution_time=o.execution_time,
+                        team_strengths=o.team_strengths,
+                        simulated_match_rounds=o.simulated_match_rounds,
+                    )
+                    for o in resp.items
+                ]
+                all_items.extend(items)
+                
+                if resp.HasField('paged'):
+                    last_paged_info = resp.paged
+
+            if last_paged_info is None:
+                return PagedResponse(
+                    items=[], 
+                    total_count=0, 
+                    sorting_option="", 
+                    sorting_order=""
                 )
-                for o in resp
-            ]
 
             return PagedResponse(
-                items=items,
-                total_count=resp.paged.total_count,
-                sorting_option=resp.paged.sorting_option,
-                sorting_order=resp.paged.sorting_order,
+                items=all_items,
+                total_count=last_paged_info.total_count,
+                sorting_option=last_paged_info.sorting_option,
+                sorting_order=last_paged_info.sorting_order,
             )
+            
         except grpc.RpcError as e:
             logger.error(f"GetIterationResultsBySimulationId failed: {self._format_rpc_error(e)}")
             return None
