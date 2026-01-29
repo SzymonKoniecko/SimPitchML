@@ -3,6 +3,7 @@ Klient gRPC do serwisu SimulationEngine.
 """
 from __future__ import annotations
 from typing import Optional, AsyncIterator
+import os
 import grpc
 
 # Zaktualizowane importy
@@ -14,26 +15,32 @@ from src.core import get_logger, SimulationGrpcConfig
 
 logger = get_logger(__name__)
 
+try:
+    BATCH_LIMIT = int(os.getenv("GRPC_PAGINATION_LIMIT", "100"))
+except ValueError:
+    BATCH_LIMIT = 100
+
 class SimulationEngineClient(BaseGrpcClient):
     def __init__(self, grpc_config: Optional[SimulationGrpcConfig] = None):
         super().__init__(grpc_config)
         self.stub = service_pb2_grpc.SimulationEngineServiceStub(self.channel)
 
     async def get_paged_simulation_overviews(
-        self, page_number: int = 0, page_size: int = 100
+        self, offset: int = 0, limit: int = 100
     ) -> Optional[PagedResponse[SimulationOverview]]:
         """
         RPC: GetAllSimulationOverviews
+        Pobiera jedną stronę wyników.
         """
         try:
             req = commonTypes_pb2.PagedRequestGrpc(
-                offset=page_number,
-                limit=page_size,
+                offset=offset,
+                limit=limit,
                 sorting_method=None
             )
+            
             resp = await self.stub.GetAllSimulationOverviews(req)
             
-            # Mapowanie proto -> domain entity
             items = [
                 SimulationOverview(
                     id=o.id,
@@ -54,24 +61,30 @@ class SimulationEngineClient(BaseGrpcClient):
             logger.error(f"GetAllSimulationOverviews failed: {self._format_rpc_error(e)}")
             return None
 
-    async def get_paged_simulation_overviews(
-        self, page_size: int = 50
+    async def get_all_paged_simulation_overviews(
+        self
     ) -> AsyncIterator[SimulationOverview]:
         """
-        Helper: iteruje po wszystkich stronach (auto-paginacja).
+        Helper: iteruje po WSZYSTKICH wynikach (auto-paginacja).
+        Pobiera dane strona po stronie i zwraca je jako pojedynczy strumień (generator).
         """
-        page_number = 0
+        current_offset = 0
+        
         while True:
-            
-            page = await self.get_paged_simulation_overviews(page_number, page_size)
+            page = await self.get_paged_simulation_overviews(
+                offset=current_offset, 
+                limit=BATCH_LIMIT
+            )
+            print(current_offset)
             if not page or not page.items:
+                logger.warning("not simulation_overviews or not *.items")
                 break
 
             for item in page.items:
                 yield item
 
-            if len(page.items) < page_size:
+            if len(page.items) < BATCH_LIMIT:
                 break
                 
-            page_number += 1
-    
+            current_offset += BATCH_LIMIT
+        

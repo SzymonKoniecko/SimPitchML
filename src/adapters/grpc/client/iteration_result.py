@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Optional
 import os
 import grpc
-
+import json
 # Zaktualizowane importy
 from src.adapters.grpc.client.base import BaseGrpcClient
 from src.generated.IterationResult import service_pb2_grpc, requests_pb2
@@ -60,8 +60,8 @@ class IterationResultClient(BaseGrpcClient):
                             iteration_index=o.iteration_index,
                             start_date=o.start_date,
                             execution_time=o.execution_time,
-                            team_strengths=o.team_strengths,
-                            simulated_match_rounds=o.simulated_match_rounds,
+                            team_strengths=IterationResult.from_team_strength_raw(json.loads(o.team_strengths)),
+                            simulated_match_rounds=IterationResult.from_sim_matches_raw(json.loads(o.simulated_match_rounds)),
                         )
                         for o in resp.items
                     ]
