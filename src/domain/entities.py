@@ -80,7 +80,14 @@ class IterationResult:
             ) 
             for item in data
         ]
-
+    
+    def to_pretty_string(self) -> str:
+        import dataclasses
+        import json
+        
+        data_dict = dataclasses.asdict(self)
+        
+        return json.dumps(data_dict, indent=4, default=str)
 
 @dataclass(frozen=True)
 class MatchResult:

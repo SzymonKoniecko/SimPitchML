@@ -84,7 +84,7 @@ class IterationResultClient(BaseGrpcClient):
                 
                 if final_total_count > 0 and len(all_items) >= final_total_count:
                     break
-
+            
             return PagedResponse(
                 items=all_items,
                 total_count=final_total_count, # lub len(all_items)

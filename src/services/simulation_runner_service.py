@@ -3,7 +3,7 @@ Simulation Runner Service / Use Case
 """
 from src.adapters.grpc.client import IterationResultClient, SimulationEngineClient
 from src.core import get_logger
-from src.domain.entities import PagedResponse
+from src.domain.entities import IterationResult, PagedResponse
 
 logger = get_logger(__name__)
 
@@ -42,7 +42,7 @@ class SimulationRunnerService:
         
         return page
     
-    async def run_get_all_iterationResults(self, simulation_id):
+    async def run_get_iterationResults_by_simulationId(self, simulation_id):
         page = await self._iteration_result_client.get_all_iterationResults_BySimulationId(simulation_id)
         
         if not page:
@@ -50,8 +50,9 @@ class SimulationRunnerService:
             return
 
         logger.info(f"Total iteration results found: {page.total_count}")
-
-        for item in page.items:
-            logger.info(f"IterationResult {item.id} - index={item.iteration_index}")
+        
+        #logger.info(f" 1st iteration result __ {IterationResult.to_pretty_string(page.items[0])}")
+        #for item in page.items[0]:
+        #    logger.info(f"IterationResult {item.id} - index={item.team_strengths[0].posterior.defensive}")
         
         return page

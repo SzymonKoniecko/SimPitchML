@@ -59,7 +59,7 @@ async def get_iteration_results(
 ):
     logger.info(f"API Request: get_iteration_results(simulation_id={simulation_id})")
     
-    result = await service.run_get_all_iterationResults(simulation_id=simulation_id)
+    result = await service.run_get_iterationResults_by_simulationId(simulation_id=simulation_id)
     
     if not result:
         raise HTTPException(status_code=404, detail="No iteration results found or error occurred")
