@@ -35,15 +35,12 @@ class IterationResult:
             try:
                 data = json.loads(data)
             except json.JSONDecodeError:
-                logger.error(f"Failed to decode JSON: {data}")
+                logger.error(f"Failed to decode TeamStrength JSON: {data[:100]}...") # Log snippet only
                 return [] 
 
-        
-        # FIX: Manually instantiate nested StrengthItem objects
-        # We assume the JSON keys match the dataclass fields (team_id vs TeamId needs handling)
         return [
             TeamStrength(
-                team_id=item.get("TeamId") or item.get("team_id"), # Handle capitalization fallback
+                team_id=item.get("TeamId") or item.get("team_id"), 
                 likelihood=StrengthItem(
                     offensive=item["Likelihood"]["Offensive"],
                     defensive=item["Likelihood"]["Defensive"]
@@ -52,9 +49,9 @@ class IterationResult:
                     offensive=item["Posterior"]["Offensive"],
                     defensive=item["Posterior"]["Defensive"]
                 ),
-                expected_goals=str(item["ExpectedGoals"]), # Ensure string type
+                expected_goals=str(item.get("ExpectedGoals", 0.0)), # Safe access + string conversion
                 last_update=item["LastUpdate"],
-                round_id=item["RoundId"]
+                round_id=item.get("RoundId") or item.get("round_id") 
             ) 
             for item in data
         ]
@@ -70,9 +67,20 @@ class IterationResult:
             except json.JSONDecodeError:
                 return []
         
-        # Simple unpacking works here since MatchResult has no nested objects
-        # Assumes JSON keys match fields exactly. If casing differs (Id vs id), map manually like above.
-        return [MatchResult(**item) for item in data]
+        return [
+            MatchResult(
+                id=item.get("Id") or item.get("id"),
+                round_id=item.get("RoundId") or item.get("round_id"),
+                home_team_id=item.get("HomeTeamId") or item.get("home_team_id"),
+                away_team_id=item.get("AwayTeamId") or item.get("away_team_id"),
+                home_goals=item.get("HomeGoals", 0),
+                away_goals=item.get("AwayGoals", 0),
+                is_draw=item.get("IsDraw", False),
+                is_played=item.get("IsPlayed", True),
+            ) 
+            for item in data
+        ]
+
 
 @dataclass(frozen=True)
 class MatchResult:
