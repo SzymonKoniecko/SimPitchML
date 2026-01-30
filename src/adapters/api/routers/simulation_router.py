@@ -3,7 +3,7 @@ src/adapters/api/routers/simulation_router.py
 REST Adapter (Controller)
 """
 from fastapi import APIRouter, Depends, HTTPException
-from src.services import SimulationRunnerService
+from src.services import SimulationService
 from src.adapters.grpc.client import IterationResultClient, SimulationEngineClient
 from src.core import get_logger
 
@@ -28,12 +28,12 @@ async def get_iteration_result_grpc_client():
 def get_simulation_service(
         sim_engine_client: SimulationEngineClient = Depends(get_sim_engine_grpc_client),
         iteration_result_client: IterationResultClient = Depends(get_iteration_result_grpc_client)
-) -> SimulationRunnerService:
-    return SimulationRunnerService(sim_engine_client, iteration_result_client)
+) -> SimulationService:
+    return SimulationService(sim_engine_client, iteration_result_client)
 
 @router.get("/simulations/overviews/all")
 async def get_simulation_overview(
-    service: SimulationRunnerService = Depends(get_simulation_service)
+    service: SimulationService = Depends(get_simulation_service)
 ):
     logger.info(f"API Request: run_all_overview_scenario())")
     
@@ -55,7 +55,7 @@ async def get_simulation_overview(
 @router.get("/simulations/iterationresults")
 async def get_iteration_results(
     simulation_id: str, 
-    service: SimulationRunnerService = Depends(get_simulation_service)
+    service: SimulationService = Depends(get_simulation_service)
 ):
     logger.info(f"API Request: get_iteration_results(simulation_id={simulation_id})")
     

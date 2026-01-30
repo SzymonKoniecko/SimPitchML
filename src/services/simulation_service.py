@@ -7,7 +7,7 @@ from src.domain.entities import IterationResult, PagedResponse
 
 logger = get_logger(__name__)
 
-class SimulationRunnerService:
+class SimulationService:
     def __init__(self, _simulation_engine_client: SimulationEngineClient, _iteration_result_client: IterationResultClient):
         self._simulation_engine_client = _simulation_engine_client
         self._iteration_result_client = _iteration_result_client
