@@ -56,3 +56,8 @@ class SimulationService:
         #    logger.info(f"IterationResult {item.id} - index={item.team_strengths[0].posterior.defensive}")
         
         return page
+
+    async def get_pending_simulations_to_sync(self):
+        result = await self._simulation_engine_client.get_latest_simulationIds_by_date()
+
+        return result

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Optional, AsyncIterator
 import os
 import grpc
+from datetime import datetime
 
 # Zaktualizowane importy
 from src.adapters.grpc.client.base import BaseGrpcClient
@@ -87,4 +88,24 @@ class SimulationEngineClient(BaseGrpcClient):
                 break
                 
             current_offset += BATCH_LIMIT
+
+    async def get_latest_simulationIds_by_date(
+            self
+    ) -> List[str]:
+        """
+        Helper: Download pending simulations to sync.
+        Returns List[str].
+        """
+        now = datetime.now()
+        # YYYY-MM-DD HH:MM:SS.mmm.
+        formatted_date = now.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
+        request = requests_pb2.GetLatestSimulationIdsRequest(date=formatted_date)
+        result = await self.stub.GetLatestSimulationIds(request)
         
+        ids_list = list(result.simulation_ids)
+
+        for date in ids_list:
+            logger.info(f'ids: {date}')
+        return ids_list
+
