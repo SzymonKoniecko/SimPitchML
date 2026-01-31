@@ -36,6 +36,11 @@ class SimulationEngineServiceStub(object):
                 request_serializer=SimulationEngine_dot_requests__pb2.GetSimulationStateByIdRequest.SerializeToString,
                 response_deserializer=SimulationEngine_dot_responses__pb2.SimulationStateResponse.FromString,
                 )
+        self.GetLatestSimulationIds = channel.unary_unary(
+                '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetLatestSimulationIds',
+                request_serializer=SimulationEngine_dot_requests__pb2.GetLatestSimulationIdsRequest.SerializeToString,
+                response_deserializer=SimulationEngine_dot_responses__pb2.SimulationIdsResponse.FromString,
+                )
         self.StopSimulationById = channel.unary_unary(
                 '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/StopSimulationById',
                 request_serializer=SimulationEngine_dot_requests__pb2.StopSimulationRequest.SerializeToString,
@@ -70,6 +75,12 @@ class SimulationEngineServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetLatestSimulationIds(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def StopSimulationById(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -98,6 +109,11 @@ def add_SimulationEngineServiceServicer_to_server(servicer, server):
                     servicer.GetSimulationStateById,
                     request_deserializer=SimulationEngine_dot_requests__pb2.GetSimulationStateByIdRequest.FromString,
                     response_serializer=SimulationEngine_dot_responses__pb2.SimulationStateResponse.SerializeToString,
+            ),
+            'GetLatestSimulationIds': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetLatestSimulationIds,
+                    request_deserializer=SimulationEngine_dot_requests__pb2.GetLatestSimulationIdsRequest.FromString,
+                    response_serializer=SimulationEngine_dot_responses__pb2.SimulationIdsResponse.SerializeToString,
             ),
             'StopSimulationById': grpc.unary_unary_rpc_method_handler(
                     servicer.StopSimulationById,
@@ -179,6 +195,23 @@ class SimulationEngineService(object):
         return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetSimulationStateById',
             SimulationEngine_dot_requests__pb2.GetSimulationStateByIdRequest.SerializeToString,
             SimulationEngine_dot_responses__pb2.SimulationStateResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetLatestSimulationIds(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetLatestSimulationIds',
+            SimulationEngine_dot_requests__pb2.GetLatestSimulationIdsRequest.SerializeToString,
+            SimulationEngine_dot_responses__pb2.SimulationIdsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 

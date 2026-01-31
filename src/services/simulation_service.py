@@ -2,12 +2,14 @@
 Simulation Runner Service / Use Case
 """
 from src.adapters.grpc.client import IterationResultClient, SimulationEngineClient
+from src.adapters.persistence.json_repository import JsonFileRepository
 from src.core import get_logger
 from src.domain.entities import IterationResult, PagedResponse
-
+from src.adapters.persistence import DatabaseContext
+from datetime import datetime
 logger = get_logger(__name__)
 
-class SimulationRunnerService:
+class SimulationService:
     def __init__(self, _simulation_engine_client: SimulationEngineClient, _iteration_result_client: IterationResultClient):
         self._simulation_engine_client = _simulation_engine_client
         self._iteration_result_client = _iteration_result_client
@@ -56,3 +58,23 @@ class SimulationRunnerService:
         #    logger.info(f"IterationResult {item.id} - index={item.team_strengths[0].posterior.defensive}")
         
         return page
+
+    async def get_pending_simulations_to_sync(self):
+        
+        db = DatabaseContext()
+        sync_date = db.TakeLatestSynchronizationDate()
+
+        if sync_date is None:
+            sync_date = datetime(1900, 1, 1)
+            pass
+        
+        
+
+        result = await self._simulation_engine_client.get_latest_simulationIds_by_date(latest_date=sync_date)
+        
+        #db.CreateLatestSynchronizationRow("2026-02-03 00:59:46.886", 2)
+        
+
+        logger.info(f"Date: {sync_date} - Latest sync: {result}")
+
+        return result
