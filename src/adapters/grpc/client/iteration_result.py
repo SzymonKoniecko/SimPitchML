@@ -6,7 +6,6 @@ from typing import Optional
 import os
 import grpc
 import json
-# Zaktualizowane importy
 from src.adapters.grpc.client.base import BaseGrpcClient
 from src.generated.IterationResult import service_pb2_grpc, requests_pb2
 from src.generated import commonTypes_pb2

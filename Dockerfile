@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 #  requirements
 COPY requirements.txt .
+COPY sim_pitch_models /app/models_data
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src ./src

@@ -101,6 +101,13 @@ class MatchResult:
     is_played: bool
 
 @dataclass(frozen=True)
+class LeagueRound:
+    id: str
+    round_id: str
+    season_year: str
+    round: int
+
+@dataclass(frozen=True)
 class StrengthItem:
     offensive: float
     defensive: float

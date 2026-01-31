@@ -14,26 +14,30 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x63ommonTypes.proto\x12 SimPitchProtos.SimulationService\"\xb5\x01\n\x13IterationResultGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x15\n\rsimulation_id\x18\x02 \x01(\t\x12\x17\n\x0fiteration_index\x18\x03 \x01(\x05\x12\x12\n\nstart_date\x18\x04 \x01(\t\x12\x16\n\x0e\x65xecution_time\x18\x05 \x01(\t\x12\x16\n\x0eteam_strengths\x18\x06 \x01(\t\x12\x1e\n\x16simulated_match_rounds\x18\x07 \x01(\t\"\x9f\x04\n\x14SimulationParamsGrpc\x12\r\n\x05title\x18\x01 \x01(\t\x12\x14\n\x0cseason_years\x18\x02 \x03(\t\x12\x11\n\tleague_id\x18\x03 \x01(\t\x12\x12\n\niterations\x18\x04 \x01(\x05\x12\x0c\n\x04seed\x18\x05 \x01(\x05\x12\x1c\n\x0fleague_round_id\x18\x06 \x01(\tH\x00\x88\x01\x01\x12\x34\n\'create_scoreboard_on_complete_iteration\x18\x07 \x01(\x08H\x01\x88\x01\x01\x12!\n\x14games_to_reach_trust\x18\x08 \x01(\x05H\x02\x88\x01\x01\x12\x1d\n\x10\x63onfidence_level\x18\t \x01(\x02H\x03\x88\x01\x01\x12\x1b\n\x0ehome_advantage\x18\n \x01(\x02H\x04\x88\x01\x01\x12\x19\n\x0cnoise_factor\x18\x0b \x01(\x02H\x05\x88\x01\x01\x12#\n\x16target_league_round_id\x18\x0c \x01(\tH\x06\x88\x01\x01\x12\r\n\x05model\x18\r \x01(\tB\x12\n\x10_league_round_idB*\n(_create_scoreboard_on_complete_iterationB\x17\n\x15_games_to_reach_trustB\x13\n\x11_confidence_levelB\x11\n\x0f_home_advantageB\x0f\n\r_noise_factorB\x19\n\x17_target_league_round_id\"\xc6\x01\n\x16SimulationOverviewGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x14\n\x0c\x63reated_date\x18\x02 \x01(\t\x12Q\n\x11simulation_params\x18\x03 \x01(\x0b\x32\x36.SimPitchProtos.SimulationService.SimulationParamsGrpc\x12\x18\n\x10league_strengths\x18\x04 \x01(\t\x12\x1d\n\x15prior_league_strength\x18\x05 \x01(\x02\"\x97\x01\n\x13SimulationStateGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x15\n\rsimulation_id\x18\x02 \x01(\t\x12 \n\x18last_completed_iteration\x18\x03 \x01(\x05\x12\x18\n\x10progress_percent\x18\x04 \x01(\x02\x12\r\n\x05state\x18\x05 \x01(\t\x12\x12\n\nupdated_at\x18\x06 \x01(\t\"M\n\x11SortingMethodGrpc\x12\x16\n\x0esorting_option\x18\x01 \x01(\t\x12\r\n\x05order\x18\x02 \x01(\t\x12\x11\n\tcondition\x18\x03 \x01(\t\"~\n\x10PagedRequestGrpc\x12\x0e\n\x06offset\x18\x01 \x01(\x05\x12\r\n\x05limit\x18\x02 \x01(\x05\x12K\n\x0esorting_method\x18\x03 \x01(\x0b\x32\x33.SimPitchProtos.SimulationService.SortingMethodGrpc\"W\n\x11PagedResponseGrpc\x12\x13\n\x0btotal_count\x18\x01 \x01(\x05\x12\x16\n\x0esorting_option\x18\x02 \x01(\t\x12\x15\n\rsorting_order\x18\x03 \x01(\tB#\xaa\x02 SimPitchProtos.SimulationServiceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11\x63ommonTypes.proto\x12 SimPitchProtos.SportsDataService\"5\n\x0b\x43ountryGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0c\n\x04\x63ode\x18\x03 \x01(\t\"9\n\x0bStadiumGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x10\n\x08\x63\x61pacity\x18\x03 \x01(\x05\"\x9c\x01\n\nLeagueGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\tcountryId\x18\x03 \x01(\t\x12\x11\n\tmax_round\x18\x04 \x01(\x05\x12N\n\x10league_strengths\x18\x05 \x03(\x0b\x32\x34.SimPitchProtos.SportsDataService.LeagueStrengthGrpc\"Z\n\x12LeagueStrengthGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x11\n\tleague_id\x18\x02 \x01(\t\x12\x13\n\x0bseason_year\x18\x03 \x01(\t\x12\x10\n\x08strength\x18\x04 \x01(\x02\"`\n\x19\x43ompetitionMembershipGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07team_id\x18\x02 \x01(\t\x12\x11\n\tleague_id\x18\x03 \x01(\t\x12\x13\n\x0bseason_year\x18\x04 \x01(\t\"\x8a\x02\n\x08TeamGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04name\x18\x02 \x01(\t\x12>\n\x07\x63ountry\x18\x03 \x01(\x0b\x32-.SimPitchProtos.SportsDataService.CountryGrpc\x12>\n\x07stadium\x18\x04 \x01(\x0b\x32-.SimPitchProtos.SportsDataService.StadiumGrpc\x12P\n\x0bmemberships\x18\x05 \x03(\x0b\x32;.SimPitchProtos.SportsDataService.CompetitionMembershipGrpc\x12\x12\n\nshort_name\x18\x06 \x01(\t\"T\n\x0fLeagueRoundGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x11\n\tleague_id\x18\x02 \x01(\t\x12\x13\n\x0bseason_year\x18\x03 \x01(\t\x12\r\n\x05round\x18\x04 \x01(\x05\"\xdf\x01\n\x0eMatchRoundGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08round_id\x18\x02 \x01(\t\x12\x14\n\x0chome_team_id\x18\x03 \x01(\t\x12\x14\n\x0c\x61way_team_id\x18\x04 \x01(\t\x12\x17\n\nhome_goals\x18\x05 \x01(\x05H\x00\x88\x01\x01\x12\x17\n\naway_goals\x18\x06 \x01(\x05H\x01\x88\x01\x01\x12\x14\n\x07is_draw\x18\x07 \x01(\x08H\x02\x88\x01\x01\x12\x11\n\tis_played\x18\x08 \x01(\x08\x42\r\n\x0b_home_goalsB\r\n\x0b_away_goalsB\n\n\x08_is_draw\"\xc5\x01\n\x0fSeasonStatsGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07team_id\x18\x02 \x01(\t\x12\x13\n\x0bseason_year\x18\x03 \x01(\t\x12\x11\n\tleague_id\x18\x04 \x01(\t\x12\x16\n\x0ematches_played\x18\x05 \x01(\x05\x12\x0c\n\x04wins\x18\x06 \x01(\x05\x12\x0e\n\x06losses\x18\x07 \x01(\x05\x12\r\n\x05\x64raws\x18\x08 \x01(\x05\x12\x11\n\tgoals_for\x18\t \x01(\x05\x12\x15\n\rgoals_against\x18\n \x01(\x05\x42#\xaa\x02 SimPitchProtos.SportsDataServiceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'commonTypes_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._options = None
-  _globals['DESCRIPTOR']._serialized_options = b'\252\002 SimPitchProtos.SimulationService'
-  _globals['_ITERATIONRESULTGRPC']._serialized_start=56
-  _globals['_ITERATIONRESULTGRPC']._serialized_end=237
-  _globals['_SIMULATIONPARAMSGRPC']._serialized_start=240
-  _globals['_SIMULATIONPARAMSGRPC']._serialized_end=783
-  _globals['_SIMULATIONOVERVIEWGRPC']._serialized_start=786
-  _globals['_SIMULATIONOVERVIEWGRPC']._serialized_end=984
-  _globals['_SIMULATIONSTATEGRPC']._serialized_start=987
-  _globals['_SIMULATIONSTATEGRPC']._serialized_end=1138
-  _globals['_SORTINGMETHODGRPC']._serialized_start=1140
-  _globals['_SORTINGMETHODGRPC']._serialized_end=1217
-  _globals['_PAGEDREQUESTGRPC']._serialized_start=1219
-  _globals['_PAGEDREQUESTGRPC']._serialized_end=1345
-  _globals['_PAGEDRESPONSEGRPC']._serialized_start=1347
-  _globals['_PAGEDRESPONSEGRPC']._serialized_end=1434
+  _globals['DESCRIPTOR']._serialized_options = b'\252\002 SimPitchProtos.SportsDataService'
+  _globals['_COUNTRYGRPC']._serialized_start=55
+  _globals['_COUNTRYGRPC']._serialized_end=108
+  _globals['_STADIUMGRPC']._serialized_start=110
+  _globals['_STADIUMGRPC']._serialized_end=167
+  _globals['_LEAGUEGRPC']._serialized_start=170
+  _globals['_LEAGUEGRPC']._serialized_end=326
+  _globals['_LEAGUESTRENGTHGRPC']._serialized_start=328
+  _globals['_LEAGUESTRENGTHGRPC']._serialized_end=418
+  _globals['_COMPETITIONMEMBERSHIPGRPC']._serialized_start=420
+  _globals['_COMPETITIONMEMBERSHIPGRPC']._serialized_end=516
+  _globals['_TEAMGRPC']._serialized_start=519
+  _globals['_TEAMGRPC']._serialized_end=785
+  _globals['_LEAGUEROUNDGRPC']._serialized_start=787
+  _globals['_LEAGUEROUNDGRPC']._serialized_end=871
+  _globals['_MATCHROUNDGRPC']._serialized_start=874
+  _globals['_MATCHROUNDGRPC']._serialized_end=1097
+  _globals['_SEASONSTATSGRPC']._serialized_start=1100
+  _globals['_SEASONSTATSGRPC']._serialized_end=1297
 # @@protoc_insertion_point(module_scope)
