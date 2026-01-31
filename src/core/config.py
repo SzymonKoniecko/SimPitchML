@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import os
-
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
-
 
 @dataclass(frozen=True)
 class SimulationGrpcConfig:

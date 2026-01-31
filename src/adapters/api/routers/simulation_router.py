@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.services import SimulationService
 from src.adapters.grpc.client import IterationResultClient, SimulationEngineClient
 from src.core import get_logger
-from src.adapters.repositories import DatabaseContext
+from src.adapters.persistence import DatabaseContext
 
 logger = get_logger(__name__)
 router = APIRouter()
