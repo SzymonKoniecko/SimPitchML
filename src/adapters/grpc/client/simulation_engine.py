@@ -90,22 +90,30 @@ class SimulationEngineClient(BaseGrpcClient):
             current_offset += BATCH_LIMIT
 
     async def get_latest_simulationIds_by_date(
-            self
+            self, latest_date: Union[str, datetime]
     ) -> List[str]:
         """
         Helper: Download pending simulations to sync.
-        Returns List[str].
+        Args:
+            latest_date: Can be a datetime object or an already formatted string.
+        Returns:
+            List[str]: List of simulation IDs.
         """
-        now = datetime.now()
-        # YYYY-MM-DD HH:MM:SS.mmm.
-        formatted_date = now.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        formatted_date_str = ""
 
-        request = requests_pb2.GetLatestSimulationIdsRequest(date=formatted_date)
+        logger.info('... SYNC HAS BEEN EXECUTED ...')
+        if isinstance(latest_date, datetime):
+            formatted_date_str = latest_date.isoformat(timespec='milliseconds')
+        elif isinstance(latest_date, str):
+            formatted_date_str = latest_date
+        else:
+            raise TypeError(f"Invalid type for latest_date: {type(latest_date)}. Expected str or datetime.")
+
+        request = requests_pb2.GetLatestSimulationIdsRequest(date=formatted_date_str)
+        
         result = await self.stub.GetLatestSimulationIds(request)
         
         ids_list = list(result.simulation_ids)
 
-        for date in ids_list:
-            logger.info(f'ids: {date}')
         return ids_list
 

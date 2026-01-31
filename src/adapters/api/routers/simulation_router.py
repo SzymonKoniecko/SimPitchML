@@ -69,10 +69,6 @@ async def get_iteration_results(
 ):
     logger.info(f"API Request: get_iteration_results(simulation_id={simulation_id})")
 
-    # db = DatabaseContext()
-    # result = db.TakeLatestSynchronizationDate()
-    # logger.info(f"Latest sync: {result}")
-
     result = await service.run_get_iterationResults_by_simulationId(
         simulation_id=simulation_id
     )
@@ -102,5 +98,5 @@ async def get_pending_simulations_to_sync(
     service: SimulationService = Depends(get_simulation_service),
 ):
     result = await service.get_pending_simulations_to_sync()
-
+    
     return [{"id": item} for item in result]

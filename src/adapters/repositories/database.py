@@ -34,7 +34,7 @@ class DatabaseContext:
     def CreateLatestSynchronizationRow(self, LastSyncDate, AddedSimulations):
         # 1. Use placeholders (:name) for parameters. 
         query = text("""
-            INSERT INTO SimPitchMl.dbo.Synchronization (Id, SynchronizationDate, AddedSimulations) 
+            INSERT INTO SimPitchMl.dbo.Synchronization (Id, LastSyncDate, AddedSimulations) 
             VALUES (:id, :date, :count)
         """)
         
