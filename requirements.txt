@@ -22,8 +22,8 @@ grpcio-tools==1.62.0
 # --- Testing ---
 pytest==8.0.2
 pytest-asyncio==0.23.5
-# httpx jest nowym standardem do testowania asynchronicznego w FastAPI
 httpx==0.27.0 
+pytest-mock==3.12.0
 
 # --- Utilities ---
 # Potrzebne do obsługi formularzy w FastAPI (częsty brak w podstawowej instalacji)
