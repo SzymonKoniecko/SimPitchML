@@ -105,10 +105,6 @@ class StrengthItem:
     offensive: float
     defensive: float
 
-# @dataclass(frozen=True)
-# class SeasonStats:
-#     offensive: float
-#     defensive: float
 
 @dataclass(frozen=True)
 class TeamStrength:
@@ -120,6 +116,10 @@ class TeamStrength:
     round_id: str
     #season_stats: int
 
+# @dataclass(frozen=True)
+# class SeasonStats:
+#     offensive: float
+#     defensive: float
 
 
 @dataclass(frozen=True)

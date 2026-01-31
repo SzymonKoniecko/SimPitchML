@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.services import SimulationService
 from src.adapters.grpc.client import IterationResultClient, SimulationEngineClient
 from src.core import get_logger
+from src.adapters.repositories import DatabaseContext
 
 logger = get_logger(__name__)
 router = APIRouter()
@@ -59,11 +60,14 @@ async def get_iteration_results(
 ):
     logger.info(f"API Request: get_iteration_results(simulation_id={simulation_id})")
     
+    #db = DatabaseContext() 
+    #result = db.TakeLatestSynchronizationDate()
+    #logger.info(f"Latest sync: {result}")
+
     result = await service.run_get_iterationResults_by_simulationId(simulation_id=simulation_id)
     
     if not result:
         raise HTTPException(status_code=404, detail="No iteration results found or error occurred")
-        
     return {
         "total_count": result.total_count,
         "items": [
