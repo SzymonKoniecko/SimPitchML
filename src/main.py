@@ -2,7 +2,8 @@
 src/main.py
 """
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from src.adapters.api.routers import simulation_router, sportsdata_router
 from src.core.config import config
 from src.core.logger import get_logger
@@ -22,6 +23,11 @@ def create_app() -> FastAPI:
     return app
 
 app = create_app()
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception("Unhandled exception", extra={"url": str(request.url)})
+    return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
 
 if __name__ == "__main__":
     logger.info(f"Starting API server")
