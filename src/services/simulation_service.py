@@ -65,9 +65,9 @@ class SimulationService:
         sync_date = db.TakeLatestSynchronizationDate()
 
         if sync_date is None:
-            sync_date = datetime(1900, 1, 1).now
+            sync_date = datetime(1900, 1, 1)
             pass
-
+        
         result = await self._simulation_engine_client.get_latest_simulationIds_by_date(latest_date=sync_date)
         
         db.CreateLatestSynchronizationRow(datetime.now(), len(result))

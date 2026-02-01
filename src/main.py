@@ -3,7 +3,7 @@ src/main.py
 """
 import uvicorn
 from fastapi import FastAPI
-from src.adapters.api.routers import simulation_router
+from src.adapters.api.routers import simulation_router, sportsdata_router
 from src.core.config import config
 from src.core.logger import get_logger
 import os
@@ -17,6 +17,7 @@ def create_app() -> FastAPI:
     
     # Rejestracja routerów
     app.include_router(simulation_router.router, prefix="/api/v1", tags=["simulations"])
+    app.include_router(sportsdata_router.router, prefix="/api/v1", tags=["sportsData"])
     
     return app
 

@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 #  requirements
 COPY requirements.txt .
+COPY data_storage /app/data_storage
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src ./src

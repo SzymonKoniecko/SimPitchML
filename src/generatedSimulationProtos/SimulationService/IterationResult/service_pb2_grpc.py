@@ -2,8 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from IterationResult import requests_pb2 as IterationResult_dot_requests__pb2
-from IterationResult import responses_pb2 as IterationResult_dot_responses__pb2
+from src.generatedSimulationProtos.SimulationService.IterationResult import requests_pb2 as SimulationService_dot_IterationResult_dot_requests__pb2
+from src.generatedSimulationProtos.SimulationService.IterationResult import responses_pb2 as SimulationService_dot_IterationResult_dot_responses__pb2
 
 
 class IterationResultServiceStub(object):
@@ -17,13 +17,13 @@ class IterationResultServiceStub(object):
         """
         self.GetIterationResultById = channel.unary_unary(
                 '/SimPitchProtos.SimulationService.IterationResult.IterationResultService/GetIterationResultById',
-                request_serializer=IterationResult_dot_requests__pb2.IterationResultByIdRequest.SerializeToString,
-                response_deserializer=IterationResult_dot_responses__pb2.IterationResultByIdResponse.FromString,
+                request_serializer=SimulationService_dot_IterationResult_dot_requests__pb2.IterationResultByIdRequest.SerializeToString,
+                response_deserializer=SimulationService_dot_IterationResult_dot_responses__pb2.IterationResultByIdResponse.FromString,
                 )
         self.GetIterationResultsBySimulationId = channel.unary_stream(
                 '/SimPitchProtos.SimulationService.IterationResult.IterationResultService/GetIterationResultsBySimulationId',
-                request_serializer=IterationResult_dot_requests__pb2.IterationResultsBySimulationIdRequest.SerializeToString,
-                response_deserializer=IterationResult_dot_responses__pb2.IterationResultsBySimulationIdResponse.FromString,
+                request_serializer=SimulationService_dot_IterationResult_dot_requests__pb2.IterationResultsBySimulationIdRequest.SerializeToString,
+                response_deserializer=SimulationService_dot_IterationResult_dot_responses__pb2.IterationResultsBySimulationIdResponse.FromString,
                 )
 
 
@@ -47,13 +47,13 @@ def add_IterationResultServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetIterationResultById': grpc.unary_unary_rpc_method_handler(
                     servicer.GetIterationResultById,
-                    request_deserializer=IterationResult_dot_requests__pb2.IterationResultByIdRequest.FromString,
-                    response_serializer=IterationResult_dot_responses__pb2.IterationResultByIdResponse.SerializeToString,
+                    request_deserializer=SimulationService_dot_IterationResult_dot_requests__pb2.IterationResultByIdRequest.FromString,
+                    response_serializer=SimulationService_dot_IterationResult_dot_responses__pb2.IterationResultByIdResponse.SerializeToString,
             ),
             'GetIterationResultsBySimulationId': grpc.unary_stream_rpc_method_handler(
                     servicer.GetIterationResultsBySimulationId,
-                    request_deserializer=IterationResult_dot_requests__pb2.IterationResultsBySimulationIdRequest.FromString,
-                    response_serializer=IterationResult_dot_responses__pb2.IterationResultsBySimulationIdResponse.SerializeToString,
+                    request_deserializer=SimulationService_dot_IterationResult_dot_requests__pb2.IterationResultsBySimulationIdRequest.FromString,
+                    response_serializer=SimulationService_dot_IterationResult_dot_responses__pb2.IterationResultsBySimulationIdResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -77,8 +77,8 @@ class IterationResultService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.IterationResult.IterationResultService/GetIterationResultById',
-            IterationResult_dot_requests__pb2.IterationResultByIdRequest.SerializeToString,
-            IterationResult_dot_responses__pb2.IterationResultByIdResponse.FromString,
+            SimulationService_dot_IterationResult_dot_requests__pb2.IterationResultByIdRequest.SerializeToString,
+            SimulationService_dot_IterationResult_dot_responses__pb2.IterationResultByIdResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -94,7 +94,7 @@ class IterationResultService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_stream(request, target, '/SimPitchProtos.SimulationService.IterationResult.IterationResultService/GetIterationResultsBySimulationId',
-            IterationResult_dot_requests__pb2.IterationResultsBySimulationIdRequest.SerializeToString,
-            IterationResult_dot_responses__pb2.IterationResultsBySimulationIdResponse.FromString,
+            SimulationService_dot_IterationResult_dot_requests__pb2.IterationResultsBySimulationIdRequest.SerializeToString,
+            SimulationService_dot_IterationResult_dot_responses__pb2.IterationResultsBySimulationIdResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
