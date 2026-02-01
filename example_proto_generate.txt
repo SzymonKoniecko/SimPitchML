@@ -4,10 +4,29 @@ python3 -m pip install -r requirements.txt
 
 
 python3 -m grpc_tools.protoc \
-  -I proto/SportsDataService \
-  --python_out=./src/generated \
-  --grpc_python_out=./src/generated \
+  -Iproto/SimulationService \
+  --python_out=./src/generated/SimulationEngine \
+  --grpc_python_out=./src/generated/SimulationEngine \
+  proto/SimulationService/SimulationEngine/service.proto \
+  proto/SimulationService/SimulationEngine/requests.proto \
+  proto/SimulationService/SimulationEngine/responses.proto \
+  proto/SimulationService/commonTypes.proto
+
+
+# ponizej najlepsze - 
+
+
+mkdir -p ./src/generatedSportsDataProtos    
+python3 -m grpc_tools.protoc \                                                                      
+  -Iproto \
+  --python_out=./src/generatedSportsDataProtos \
+  --grpc_python_out=./src/generatedSportsDataProtos \
   proto/SportsDataService/LeagueRound/service.proto \
   proto/SportsDataService/LeagueRound/requests.proto \
   proto/SportsDataService/LeagueRound/responses.proto \
   proto/SportsDataService/commonTypes.proto
+
+find ./src/generated/simulation -type d -not -path "*/__pycache__*" -exec touch {}/__init__.py \;
+
+
+na koncu dodac to do kazdego z wygenerowanych - o ile jest problem z importem (src.generatedSimulationProtos.)

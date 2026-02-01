@@ -2,9 +2,9 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from SimulationEngine import requests_pb2 as SimulationEngine_dot_requests__pb2
-from SimulationEngine import responses_pb2 as SimulationEngine_dot_responses__pb2
-import commonTypes_pb2 as commonTypes__pb2
+from src.generatedSimulationProtos.SimulationService.SimulationEngine import requests_pb2 as SimulationService_dot_SimulationEngine_dot_requests__pb2
+from src.generatedSimulationProtos.SimulationService.SimulationEngine import responses_pb2 as SimulationService_dot_SimulationEngine_dot_responses__pb2
+from src.generatedSimulationProtos.SimulationService import commonTypes_pb2 as SimulationService_dot_commonTypes__pb2
 
 
 class SimulationEngineServiceStub(object):
@@ -18,33 +18,33 @@ class SimulationEngineServiceStub(object):
         """
         self.RunSimulation = channel.unary_unary(
                 '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/RunSimulation',
-                request_serializer=SimulationEngine_dot_requests__pb2.RunSimulationEngineRequest.SerializeToString,
-                response_deserializer=SimulationEngine_dot_responses__pb2.RunSimulationEngineResponse.FromString,
+                request_serializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.RunSimulationEngineRequest.SerializeToString,
+                response_deserializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.RunSimulationEngineResponse.FromString,
                 )
         self.GetSimulationOverviewById = channel.unary_unary(
                 '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetSimulationOverviewById',
-                request_serializer=SimulationEngine_dot_requests__pb2.GetSimulationOverviewByIdRequest.SerializeToString,
-                response_deserializer=SimulationEngine_dot_responses__pb2.SimulationOverviewResponse.FromString,
+                request_serializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.GetSimulationOverviewByIdRequest.SerializeToString,
+                response_deserializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationOverviewResponse.FromString,
                 )
         self.GetAllSimulationOverviews = channel.unary_unary(
                 '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetAllSimulationOverviews',
-                request_serializer=commonTypes__pb2.PagedRequestGrpc.SerializeToString,
-                response_deserializer=SimulationEngine_dot_responses__pb2.SimulationOverviewsPagedResponse.FromString,
+                request_serializer=SimulationService_dot_commonTypes__pb2.PagedRequestGrpc.SerializeToString,
+                response_deserializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationOverviewsPagedResponse.FromString,
                 )
         self.GetSimulationStateById = channel.unary_unary(
                 '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetSimulationStateById',
-                request_serializer=SimulationEngine_dot_requests__pb2.GetSimulationStateByIdRequest.SerializeToString,
-                response_deserializer=SimulationEngine_dot_responses__pb2.SimulationStateResponse.FromString,
+                request_serializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.GetSimulationStateByIdRequest.SerializeToString,
+                response_deserializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationStateResponse.FromString,
                 )
         self.GetLatestSimulationIds = channel.unary_unary(
                 '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetLatestSimulationIds',
-                request_serializer=SimulationEngine_dot_requests__pb2.GetLatestSimulationIdsRequest.SerializeToString,
-                response_deserializer=SimulationEngine_dot_responses__pb2.SimulationIdsResponse.FromString,
+                request_serializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.GetLatestSimulationIdsRequest.SerializeToString,
+                response_deserializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationIdsResponse.FromString,
                 )
         self.StopSimulationById = channel.unary_unary(
                 '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/StopSimulationById',
-                request_serializer=SimulationEngine_dot_requests__pb2.StopSimulationRequest.SerializeToString,
-                response_deserializer=SimulationEngine_dot_responses__pb2.StopSimulationResponse.FromString,
+                request_serializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.StopSimulationRequest.SerializeToString,
+                response_deserializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.StopSimulationResponse.FromString,
                 )
 
 
@@ -92,33 +92,33 @@ def add_SimulationEngineServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'RunSimulation': grpc.unary_unary_rpc_method_handler(
                     servicer.RunSimulation,
-                    request_deserializer=SimulationEngine_dot_requests__pb2.RunSimulationEngineRequest.FromString,
-                    response_serializer=SimulationEngine_dot_responses__pb2.RunSimulationEngineResponse.SerializeToString,
+                    request_deserializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.RunSimulationEngineRequest.FromString,
+                    response_serializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.RunSimulationEngineResponse.SerializeToString,
             ),
             'GetSimulationOverviewById': grpc.unary_unary_rpc_method_handler(
                     servicer.GetSimulationOverviewById,
-                    request_deserializer=SimulationEngine_dot_requests__pb2.GetSimulationOverviewByIdRequest.FromString,
-                    response_serializer=SimulationEngine_dot_responses__pb2.SimulationOverviewResponse.SerializeToString,
+                    request_deserializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.GetSimulationOverviewByIdRequest.FromString,
+                    response_serializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationOverviewResponse.SerializeToString,
             ),
             'GetAllSimulationOverviews': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAllSimulationOverviews,
-                    request_deserializer=commonTypes__pb2.PagedRequestGrpc.FromString,
-                    response_serializer=SimulationEngine_dot_responses__pb2.SimulationOverviewsPagedResponse.SerializeToString,
+                    request_deserializer=SimulationService_dot_commonTypes__pb2.PagedRequestGrpc.FromString,
+                    response_serializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationOverviewsPagedResponse.SerializeToString,
             ),
             'GetSimulationStateById': grpc.unary_unary_rpc_method_handler(
                     servicer.GetSimulationStateById,
-                    request_deserializer=SimulationEngine_dot_requests__pb2.GetSimulationStateByIdRequest.FromString,
-                    response_serializer=SimulationEngine_dot_responses__pb2.SimulationStateResponse.SerializeToString,
+                    request_deserializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.GetSimulationStateByIdRequest.FromString,
+                    response_serializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationStateResponse.SerializeToString,
             ),
             'GetLatestSimulationIds': grpc.unary_unary_rpc_method_handler(
                     servicer.GetLatestSimulationIds,
-                    request_deserializer=SimulationEngine_dot_requests__pb2.GetLatestSimulationIdsRequest.FromString,
-                    response_serializer=SimulationEngine_dot_responses__pb2.SimulationIdsResponse.SerializeToString,
+                    request_deserializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.GetLatestSimulationIdsRequest.FromString,
+                    response_serializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationIdsResponse.SerializeToString,
             ),
             'StopSimulationById': grpc.unary_unary_rpc_method_handler(
                     servicer.StopSimulationById,
-                    request_deserializer=SimulationEngine_dot_requests__pb2.StopSimulationRequest.FromString,
-                    response_serializer=SimulationEngine_dot_responses__pb2.StopSimulationResponse.SerializeToString,
+                    request_deserializer=SimulationService_dot_SimulationEngine_dot_requests__pb2.StopSimulationRequest.FromString,
+                    response_serializer=SimulationService_dot_SimulationEngine_dot_responses__pb2.StopSimulationResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -142,8 +142,8 @@ class SimulationEngineService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/RunSimulation',
-            SimulationEngine_dot_requests__pb2.RunSimulationEngineRequest.SerializeToString,
-            SimulationEngine_dot_responses__pb2.RunSimulationEngineResponse.FromString,
+            SimulationService_dot_SimulationEngine_dot_requests__pb2.RunSimulationEngineRequest.SerializeToString,
+            SimulationService_dot_SimulationEngine_dot_responses__pb2.RunSimulationEngineResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -159,8 +159,8 @@ class SimulationEngineService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetSimulationOverviewById',
-            SimulationEngine_dot_requests__pb2.GetSimulationOverviewByIdRequest.SerializeToString,
-            SimulationEngine_dot_responses__pb2.SimulationOverviewResponse.FromString,
+            SimulationService_dot_SimulationEngine_dot_requests__pb2.GetSimulationOverviewByIdRequest.SerializeToString,
+            SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationOverviewResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -176,8 +176,8 @@ class SimulationEngineService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetAllSimulationOverviews',
-            commonTypes__pb2.PagedRequestGrpc.SerializeToString,
-            SimulationEngine_dot_responses__pb2.SimulationOverviewsPagedResponse.FromString,
+            SimulationService_dot_commonTypes__pb2.PagedRequestGrpc.SerializeToString,
+            SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationOverviewsPagedResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -193,8 +193,8 @@ class SimulationEngineService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetSimulationStateById',
-            SimulationEngine_dot_requests__pb2.GetSimulationStateByIdRequest.SerializeToString,
-            SimulationEngine_dot_responses__pb2.SimulationStateResponse.FromString,
+            SimulationService_dot_SimulationEngine_dot_requests__pb2.GetSimulationStateByIdRequest.SerializeToString,
+            SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationStateResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -210,8 +210,8 @@ class SimulationEngineService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/GetLatestSimulationIds',
-            SimulationEngine_dot_requests__pb2.GetLatestSimulationIdsRequest.SerializeToString,
-            SimulationEngine_dot_responses__pb2.SimulationIdsResponse.FromString,
+            SimulationService_dot_SimulationEngine_dot_requests__pb2.GetLatestSimulationIdsRequest.SerializeToString,
+            SimulationService_dot_SimulationEngine_dot_responses__pb2.SimulationIdsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -227,7 +227,7 @@ class SimulationEngineService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.SimulationEngine.SimulationEngineService/StopSimulationById',
-            SimulationEngine_dot_requests__pb2.StopSimulationRequest.SerializeToString,
-            SimulationEngine_dot_responses__pb2.StopSimulationResponse.FromString,
+            SimulationService_dot_SimulationEngine_dot_requests__pb2.StopSimulationRequest.SerializeToString,
+            SimulationService_dot_SimulationEngine_dot_responses__pb2.StopSimulationResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

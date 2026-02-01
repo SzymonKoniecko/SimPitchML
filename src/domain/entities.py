@@ -103,7 +103,7 @@ class MatchResult:
 @dataclass(frozen=True)
 class LeagueRound:
     id: str
-    round_id: str
+    league_id: str
     season_year: str
     round: int
 

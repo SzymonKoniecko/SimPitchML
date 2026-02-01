@@ -2,8 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from LeagueRound import requests_pb2 as LeagueRound_dot_requests__pb2
-from LeagueRound import responses_pb2 as LeagueRound_dot_responses__pb2
+from src.generatedSportsDataProtos.SportsDataService.LeagueRound import requests_pb2 as SportsDataService_dot_LeagueRound_dot_requests__pb2
+from src.generatedSportsDataProtos.SportsDataService.LeagueRound import responses_pb2 as SportsDataService_dot_LeagueRound_dot_responses__pb2
 
 
 class LeagueRoundServiceStub(object):
@@ -17,8 +17,8 @@ class LeagueRoundServiceStub(object):
         """
         self.GetAllLeagueRoundsByParams = channel.unary_unary(
                 '/SimPitchProtos.SportsDataService.LeagueRound.LeagueRoundService/GetAllLeagueRoundsByParams',
-                request_serializer=LeagueRound_dot_requests__pb2.LeagueRoundsByParamsRequest.SerializeToString,
-                response_deserializer=LeagueRound_dot_responses__pb2.LeagueRoundsByParamsResponse.FromString,
+                request_serializer=SportsDataService_dot_LeagueRound_dot_requests__pb2.LeagueRoundsByParamsRequest.SerializeToString,
+                response_deserializer=SportsDataService_dot_LeagueRound_dot_responses__pb2.LeagueRoundsByParamsResponse.FromString,
                 )
 
 
@@ -36,8 +36,8 @@ def add_LeagueRoundServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetAllLeagueRoundsByParams': grpc.unary_unary_rpc_method_handler(
                     servicer.GetAllLeagueRoundsByParams,
-                    request_deserializer=LeagueRound_dot_requests__pb2.LeagueRoundsByParamsRequest.FromString,
-                    response_serializer=LeagueRound_dot_responses__pb2.LeagueRoundsByParamsResponse.SerializeToString,
+                    request_deserializer=SportsDataService_dot_LeagueRound_dot_requests__pb2.LeagueRoundsByParamsRequest.FromString,
+                    response_serializer=SportsDataService_dot_LeagueRound_dot_responses__pb2.LeagueRoundsByParamsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -61,7 +61,7 @@ class LeagueRoundService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SportsDataService.LeagueRound.LeagueRoundService/GetAllLeagueRoundsByParams',
-            LeagueRound_dot_requests__pb2.LeagueRoundsByParamsRequest.SerializeToString,
-            LeagueRound_dot_responses__pb2.LeagueRoundsByParamsResponse.FromString,
+            SportsDataService_dot_LeagueRound_dot_requests__pb2.LeagueRoundsByParamsRequest.SerializeToString,
+            SportsDataService_dot_LeagueRound_dot_responses__pb2.LeagueRoundsByParamsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

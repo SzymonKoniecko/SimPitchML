@@ -6,9 +6,9 @@ from typing import Optional
 import os
 import grpc
 import json
-from src.adapters.grpc.client.base import BaseGrpcClient
-from src.generated.IterationResult import service_pb2_grpc, requests_pb2
-from src.generated import commonTypes_pb2
+from src.adapters.grpc.client.baseGrpc import BaseGrpcClient
+from src.generatedSimulationProtos.SimulationService.IterationResult import service_pb2_grpc, requests_pb2
+from src.generatedSimulationProtos.SimulationService import commonTypes_pb2
 from src.domain.entities import IterationResult, PagedResponse
 from src.core import get_logger, SimulationGrpcConfig
 
