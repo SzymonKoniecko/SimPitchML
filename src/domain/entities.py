@@ -139,3 +139,9 @@ class PagedResponse(Generic[T]):
     @property
     def has_next(self) -> bool:
         return self.page_number < self.total_pages - 1
+
+
+@dataclass(frozen=True)
+class Synchronization:
+    last_sync_date: str
+    added_simulations: int

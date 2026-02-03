@@ -1,7 +1,7 @@
 """
 src/main.py
 """
-import uvicorn
+import uvicorn 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from src.adapters.api.routers import simulation_router, sportsdata_router

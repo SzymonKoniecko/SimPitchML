@@ -4,15 +4,17 @@ Simulation Runner Service / Use Case
 from src.adapters.grpc.client import IterationResultClient, SimulationEngineClient
 from src.adapters.persistence.json_repository import JsonFileRepository
 from src.core import get_logger
-from src.domain.entities import IterationResult, PagedResponse
-from src.adapters.persistence import DatabaseContext
+from src.domain.entities import IterationResult, PagedResponse, Synchronization
 from datetime import datetime
+
+from src.services.synchronization_service import SynchronizationService
 logger = get_logger(__name__)
 
 class SimulationService:
-    def __init__(self, _simulation_engine_client: SimulationEngineClient, _iteration_result_client: IterationResultClient):
+    def __init__(self, _simulation_engine_client: SimulationEngineClient, _iteration_result_client: IterationResultClient, sync_service: SynchronizationService):
         self._simulation_engine_client = _simulation_engine_client
         self._iteration_result_client = _iteration_result_client
+        self._synchronization_service = sync_service
 
     async def run_all_overview_scenario(self):
         all_items = []
@@ -59,19 +61,23 @@ class SimulationService:
         
         return page
 
+
     async def get_pending_simulations_to_sync(self):
-        
-        db = DatabaseContext()
-        sync_date = db.TakeLatestSynchronizationDate()
+        synch = self._synchronization_service.get_synchronization()
 
-        if sync_date is None:
-            sync_date = datetime(1900, 1, 1)
-            pass
-        
-        result = await self._simulation_engine_client.get_latest_simulationIds_by_date(latest_date=sync_date)
-        
-        db.CreateLatestSynchronizationRow(datetime.now(), len(result))
-        
-        logger.info(f"Date: {sync_date} - Latest sync: {result}")
+        if synch is None:
+            synch = Synchronization(
+                last_sync_date=datetime(1900, 1, 1),
+                added_simulations=0,
+            )
 
+        result = await self._simulation_engine_client.get_latest_simulationIds_by_date(
+            latest_date=synch.last_sync_date
+        )
+
+        self._synchronization_service.save_synchronization(
+            Synchronization(last_sync_date=datetime.now(), added_simulations=len(result))
+        )
+
+        logger.info(f"Date: {synch.last_sync_date} - Latest sync: {result}")
         return result

@@ -4,10 +4,11 @@ REST Adapter (Controller)
 """
 
 from fastapi import APIRouter, Depends, HTTPException
+from src.adapters.persistence.json_repository import JsonFileRepository
 from src.services import SimulationService
 from src.adapters.grpc.client import IterationResultClient, SimulationEngineClient
 from src.core import get_logger
-from src.adapters.persistence import DatabaseContext
+from src.services.synchronization_service import SynchronizationService
 
 logger = get_logger(__name__)
 router = APIRouter()
@@ -29,14 +30,20 @@ async def get_iteration_result_grpc_client():
         await client.close()
 
 
+async def get_synchronization_service():
+    service = SynchronizationService(JsonFileRepository())
+    return service
+
+
 # Dependency Injection: Fabryka serwisu
 def get_simulation_service(
     sim_engine_client: SimulationEngineClient = Depends(get_sim_engine_grpc_client),
     iteration_result_client: IterationResultClient = Depends(
         get_iteration_result_grpc_client
     ),
+    synch_service: SynchronizationService = Depends(get_synchronization_service),
 ) -> SimulationService:
-    return SimulationService(sim_engine_client, iteration_result_client)
+    return SimulationService(sim_engine_client, iteration_result_client, synch_service)
 
 
 @router.get("/simulations/overviews/all")
@@ -98,5 +105,5 @@ async def get_pending_simulations_to_sync(
     service: SimulationService = Depends(get_simulation_service),
 ):
     result = await service.get_pending_simulations_to_sync()
-    
+
     return [{"id": item} for item in result]

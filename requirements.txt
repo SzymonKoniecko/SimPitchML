@@ -8,7 +8,8 @@ pydantic==2.6.1
 pyodbc
 pandas==2.2.0
 numpy==1.26.4
-sqlalchemy==2.0.27 
+#sqlalchemy==2.0.27 
+#mssql-python
 
 # --- Machine Learning & Math ---
 xgboost==2.0.3

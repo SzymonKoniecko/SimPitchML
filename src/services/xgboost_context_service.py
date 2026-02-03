@@ -13,7 +13,6 @@ class XgBoostContextService:
 
     def save_league_model(self, model: xgb.Booster, league_id: str):
         filename = f"xgboost_{league_id}.{EXTENSION}"
-        
         full_path_object = self.repo.get_full_path(filename)
         
         #  Path object =>  string, beacuse  XGBoost needs it
