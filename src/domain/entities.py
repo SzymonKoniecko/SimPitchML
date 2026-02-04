@@ -168,3 +168,4 @@ class TrainingData:
     x_row: dict[str, Any]
     y_home: int
     y_away: int
+    prev_round_id: str # its define a TeamStrength row, before the round started

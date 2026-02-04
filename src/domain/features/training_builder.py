@@ -86,4 +86,5 @@ class TrainingBuilder:
             x_row=X_row,
             y_home=match_result.home_goals,
             y_away=match_result.away_goals,
+            prev_round_id=prev_round_id
         )
