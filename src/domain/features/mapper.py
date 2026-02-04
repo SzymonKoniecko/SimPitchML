@@ -8,32 +8,21 @@ class Mapper:
         pass
 
     @staticmethod
-    def Map_round_id_by_round_number(rounds: List[LeagueRound]) -> Dict[Tuple[str, str], LeagueRound]:
+    def map_round_id_by_round_number(rounds: List[LeagueRound]) -> Dict[int, str]:
         rounds_sorted = sorted(rounds, key=lambda x: x.round, reverse=False)
-
-        return {(r.round, r.Id) for r in rounds_sorted}
-
-    @staticmethod
-    def Map_list_of_round_for_round_id(rounds: Dict[Tuple[str, str], LeagueRound]) -> Dict[int, str]:
-        """
-        returns => key: number of round - value: round_id
-        """
-
-        map_of_rounds = {}
-
-        for value in rounds.keys:
-            if rounds[value]:
-                pass
+        return {r.round: r.id for r in rounds_sorted}
 
     @staticmethod
-    def Map_prev_round_id_by_round_id(rounds: Dict[str, LeagueRound]):
+    def Map_prev_round_id_by_round(rounds: Dict[int, str]):
         """
-        Its a key for '-1' rounds, because we are using current TeamStreangth before given match
+        Input:  {2: "r2", 3: "r3"}
+        Output: {2: "r1", 3: "r2"}  (prev round id for each round number)
         """
-        prev_round_id_by_round_id = {}
+        prev_round_id_by_round = {}
 
-        for (index, value) in rounds:
-            curr = value
-            if index == 0:
+        for round_no, round_id in rounds.items():
+            prev_id = rounds.get(round_no - 1)
+            if prev_id is not None:
+                prev_round_id_by_round[round_no] = prev_id
 
-                pass
+        return prev_round_id_by_round
