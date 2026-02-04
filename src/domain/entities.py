@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Generic, TypeVar, List
+from typing import Dict, Generic, Iterable, Tuple, TypeVar, List
 import json
 
 T = TypeVar("T")
 
 from src.core import get_logger
+
 logger = get_logger(__name__)
+
 
 @dataclass(frozen=True)
 class SimulationOverview:
@@ -15,6 +17,7 @@ class SimulationOverview:
     created_date: str
     league_strengths: str
     prior_league_strength: float
+
 
 @dataclass(frozen=True)
 class IterationResult:
@@ -30,32 +33,36 @@ class IterationResult:
     def from_team_strength_raw(data: Union[str, List[Dict]]) -> List[TeamStrength]:
         if data is None:
             return []
-            
+
         if isinstance(data, str):
             try:
                 data = json.loads(data)
             except json.JSONDecodeError:
-                logger.error(f"Failed to decode TeamStrength JSON: {data[:100]}...") # Log snippet only
-                return [] 
+                logger.error(
+                    f"Failed to decode TeamStrength JSON: {data[:100]}..."
+                )  # Log snippet only
+                return []
 
         return [
             TeamStrength(
-                team_id=item.get("TeamId") or item.get("team_id"), 
+                team_id=item.get("TeamId") or item.get("team_id"),
                 likelihood=StrengthItem(
                     offensive=item["Likelihood"]["Offensive"],
-                    defensive=item["Likelihood"]["Defensive"]
+                    defensive=item["Likelihood"]["Defensive"],
                 ),
                 posterior=StrengthItem(
                     offensive=item["Posterior"]["Offensive"],
-                    defensive=item["Posterior"]["Defensive"]
+                    defensive=item["Posterior"]["Defensive"],
                 ),
-                expected_goals=str(item.get("ExpectedGoals", 0.0)), # Safe access + string conversion
+                expected_goals=str(
+                    item.get("ExpectedGoals", 0.0)
+                ),  # Safe access + string conversion
                 last_update=item["LastUpdate"],
-                round_id=item.get("RoundId") or item.get("round_id") 
-            ) 
+                round_id=item.get("RoundId") or item.get("round_id"),
+            )
             for item in data
         ]
-    
+
     @staticmethod
     def from_sim_matches_raw(data: Union[str, List[Dict]]) -> List[MatchResult]:
         if data is None:
@@ -66,7 +73,7 @@ class IterationResult:
                 data = json.loads(data)
             except json.JSONDecodeError:
                 return []
-        
+
         return [
             MatchResult(
                 id=item.get("Id") or item.get("id"),
@@ -77,17 +84,18 @@ class IterationResult:
                 away_goals=item.get("AwayGoals", 0),
                 is_draw=item.get("IsDraw", False),
                 is_played=item.get("IsPlayed", True),
-            ) 
+            )
             for item in data
         ]
-    
+
     def to_pretty_string(self) -> str:
         import dataclasses
         import json
-        
+
         data_dict = dataclasses.asdict(self)
-        
+
         return json.dumps(data_dict, indent=4, default=str)
+
 
 @dataclass(frozen=True)
 class MatchResult:
@@ -100,12 +108,14 @@ class MatchResult:
     is_draw: bool
     is_played: bool
 
+
 @dataclass(frozen=True)
 class LeagueRound:
     id: str
     league_id: str
     season_year: str
     round: int
+
 
 @dataclass(frozen=True)
 class StrengthItem:
@@ -121,7 +131,14 @@ class TeamStrength:
     expected_goals: str
     last_update: str
     round_id: str
-    #season_stats: int
+    # season_stats: int
+
+    @staticmethod
+    def strength_map(
+        items: Iterable["TeamStrength"],
+    ) -> Dict[Tuple[str, str], "TeamStrength"]:
+        return {(ts.team_id, ts.round_id): ts for ts in items}
+
 
 # @dataclass(frozen=True)
 # class SeasonStats:
