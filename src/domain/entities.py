@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Generic, Iterable, Tuple, TypeVar, List
+from typing import Any, Dict, Generic, Iterable, Tuple, TypeVar, List
 import json
 
 T = TypeVar("T")
@@ -157,8 +157,14 @@ class PagedResponse(Generic[T]):
     def has_next(self) -> bool:
         return self.page_number < self.total_pages - 1
 
-
+### ML entities
 @dataclass(frozen=True)
 class Synchronization:
     last_sync_date: str
     added_simulations: int
+
+@dataclass(frozen=True)
+class TrainingData:
+    x_row: dict[str, Any]
+    y_home: int
+    y_away: int
