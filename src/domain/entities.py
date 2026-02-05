@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, Iterable, Tuple, TypeVar, List
+from typing import Any, Dict, Generic, Iterable, Optional, Tuple, TypeVar, List
 import json
+
+import pandas as pd
 
 T = TypeVar("T")
 
@@ -157,15 +159,95 @@ class PagedResponse(Generic[T]):
     def has_next(self) -> bool:
         return self.page_number < self.total_pages - 1
 
+
 ### ML entities
 @dataclass(frozen=True)
 class Synchronization:
     last_sync_date: str
     added_simulations: int
 
+
 @dataclass(frozen=True)
 class TrainingData:
     x_row: dict[str, Any]
+    """Wektor cech (features) dla *jednego meczu* w postaci płaskiego słownika.
+    Klucze to nazwy cech (np. 'home_p_off', 'away_l_def', 'diff_post_off'), a wartości to liczby/typy
+    możliwe do wrzucenia do DataFrame i podania do XGBoost.
+    
+    To jest wejście modelu (X). Każdy TrainingData = 1 wiersz w DataFrame.
+    """
+
     y_home: int
+    """Target (etykieta) dla regresji bramek gospodarza.
+    Oznacza liczbę goli zdobytych przez drużynę gospodarzy w tym meczu (wartość rzeczywista z symulacji/wykonania).
+    
+    To jest wyjście uczące dla modelu 'home goals'.
+    """
+
     y_away: int
-    prev_round_id: str # its define a TeamStrength row, before the round started
+    """Target (etykieta) dla regresji bramek gości.
+    Oznacza liczbę goli zdobytych przez drużynę gości w tym meczu (wartość rzeczywista z symulacji/wykonania).
+    
+    To jest wyjście uczące dla modelu 'away goals'.
+    """
+
+    prev_round_id: str
+    """Identyfikator rundy (UUID) wskazujący snapshot wejściowych sił drużyn użyty do zbudowania x_row.
+    W Twoim modelu TeamStrength jest stanem *po meczu*, więc żeby przewidzieć mecz rundy N,
+    budujesz cechy z TeamStrength z rundy N-1 — i właśnie tę rundę reprezentuje prev_round_id.
+    
+    Użycia:
+    - join: (team_id, prev_round_id) -> TeamStrength dla home/away,
+    - split czasowy: pozwala przypisać rekord do kolejności rund (przez mapę LeagueRound: round_id -> round_no),
+      bez mieszania przyszłości z przeszłością.
+    """
+
+    @staticmethod
+    def to_xy(
+        dataset: List["TrainingData"],
+        feature_schema: Optional[List[str]] = None,
+        fill_value: float = 0.0,
+    ) -> Tuple[pd.DataFrame, pd.Series, pd.Series, List[str]]:
+        """
+        Konwertuje List[TrainingData] -> (X, y_home, y_away, feature_schema).
+
+        - Jeśli feature_schema jest None: bierze kolumny z DataFrame i zwraca je jako schema.
+        - Jeśli feature_schema jest podane: dopasowuje DataFrame do tej listy kolumn
+          (brakujące kolumny uzupełnia fill_value, nadmiarowe usuwa). [web:187]
+
+        Zwracane schema zawsze odpowiada kolumnom w X (kolejność ma znaczenie przy predict).
+
+        przyklad: X_train, y_train_home, y_train_away, schema = TrainingData.to_xy(train_data)
+        """
+        if not dataset:
+            empty_X = pd.DatFrame(columns=feature_schema or [])
+            return (
+                empty_X,
+                pd.Series(dtype=int),
+                pd.Series(dtype=int),
+                (feature_schema or []),
+            )
+
+        rows = [item.x_row for item in dataset]
+        X = pd.DataFrame(rows)
+
+        if feature_schema is None:
+            feature_schema = list(X.columns)
+
+        x = X.reindex(columns=feature_schema, fill_value=fill_value)
+
+        y_home = pd.Series([item.y_home for item in dataset], dtype=int)
+        y_away = pd.Series([item.y_away for item in dataset], dtype=int)
+
+        return X, y_home, y_away, feature_schema
+    
+    @staticmethod
+    def extract_feature_schema(dataset: List["TrainingData"]) -> List[str]:
+        """
+        Wyciąga listę cech (kolumn) z datasetu.
+        Przydatne, jeśli chcesz zapisać schema do JSON i później użyć w predykcji.
+        """
+        if not dataset:
+            return []
+        return list(pd.DataFrame([d.x_row for d in dataset]))
+
