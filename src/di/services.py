@@ -1,4 +1,5 @@
 from fastapi import Depends
+from src.adapters.grpc.client.league_round import LeagueRoundClient
 from src.services.simulation_service import SimulationService
 from src.adapters.grpc.client import SimulationEngineClient, IterationResultClient
 from src.adapters.persistence.json_repository import JsonFileRepository
@@ -20,7 +21,7 @@ async def get_iteration_result_client():
         await client.close()
 
 async def get_league_round_client():
-    client = IterationResultClient()
+    client = LeagueRoundClient()
     try:
         yield client
     finally:
