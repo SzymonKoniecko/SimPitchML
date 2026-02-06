@@ -40,26 +40,27 @@ class SimulationService:
         list_training_data_dataset = []
         dict_prev_round_id_by_round_id: Dict[str, str] = {}
 
-        logger.info(f'\n \n ua {len(list_simulation_ids)} \n \n')
         if list_simulation_ids is not None and len(list_simulation_ids) != 0:
             for sim_id in list_simulation_ids:
-                tmp_dataset, dict_prev_round_id_by_round_id = (
-                    TrainingBuilder.build_dataset(
-                        iteration_result=await self.run_get_iterationResults_by_simulationId(
-                            simulation_id=sim_id
-                        ),
-                        league_rounds=league_rounds,
-                    )
+                iteration_results = await self.run_get_iterationResults_by_simulationId(
+                    simulation_id=sim_id
                 )
-                list_training_data_dataset.append(tmp_dataset)
+                for it_result in iteration_results:
+                    tmp_dataset, dict_prev_round_id_by_round_id = (
+                        TrainingBuilder.build_dataset(
+                            iteration_result=it_result,
+                            league_rounds=league_rounds,
+                        )
+                    )
+                    list_training_data_dataset.append(tmp_dataset)
 
-        #dataset_splitted = TrainingSplit.define_train_split(
-        #    dataset=list_training_data_dataset,
-        #    round_no_by_round_id=dict_prev_round_id_by_round_id,
-        #    train_until_round_no=predict_request.train_until_round_no,
-        #    train_ratio=predict_request.train_ratio,
-        #)
-        return dict_prev_round_id_by_round_id
+        dataset_splitted = TrainingSplit.define_train_split(
+           dataset=list_training_data_dataset,
+           round_no_by_round_id=dict_prev_round_id_by_round_id,
+           train_until_round_no=predict_request.train_until_round_no,
+           train_ratio=predict_request.train_ratio,
+        )
+        return dataset_splitted
 
     async def run_all_overview_scenario(self):
         items = []

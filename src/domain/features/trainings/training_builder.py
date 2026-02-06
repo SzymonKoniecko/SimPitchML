@@ -74,7 +74,7 @@ class TrainingBuilder:
             if td is not None:
                 dataset.append(td)
 
-        return dataset
+        return dataset, prev_round_id_by_round_id
 
     @staticmethod
     def build_single_training_data(
