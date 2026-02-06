@@ -2,9 +2,10 @@ import json
 import os
 from src.core import get_logger
 from pathlib import Path
-from typing import Any, Optional, Dict, Union
+from typing import Any, Optional, Dict, Protocol, Union
 
 logger = get_logger(__name__) 
+
 
 class JsonFileRepository:
     def __init__(self):

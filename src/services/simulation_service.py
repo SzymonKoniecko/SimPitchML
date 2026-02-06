@@ -1,83 +1,59 @@
-"""
-Simulation Runner Service / Use Case
-"""
-from src.adapters.grpc.client import IterationResultClient, SimulationEngineClient
-from src.adapters.persistence.json_repository import JsonFileRepository
-from src.core import get_logger
-from src.domain.entities import IterationResult, PagedResponse, Synchronization
+# src/services/simulation_service.py
 from datetime import datetime
+from src.core import get_logger
+from src.domain.entities import PagedResponse, Synchronization
+from src.di.ports.adapters.simulation_engine_port import SimulationEnginePort
+from src.di.ports.adapters.iteration_result_port import IterationResultPort
+from src.di.ports.synchronization_port import SynchronizationPort
 
-from src.services.synchronization_service import SynchronizationService
 logger = get_logger(__name__)
 
 class SimulationService:
-    def __init__(self, _simulation_engine_client: SimulationEngineClient, _iteration_result_client: IterationResultClient, sync_service: SynchronizationService):
-        self._simulation_engine_client = _simulation_engine_client
-        self._iteration_result_client = _iteration_result_client
-        self._synchronization_service = sync_service
+    def __init__(
+        self,
+        simulation_engine: SimulationEnginePort,
+        iteration_results: IterationResultPort,
+        synchronization: SynchronizationPort,
+    ):
+        self._simulation_engine = simulation_engine
+        self._iteration_results = iteration_results
+        self._synchronization = synchronization
 
     async def run_all_overview_scenario(self):
-        all_items = []
-        async for item in self._simulation_engine_client.get_all_paged_simulation_overviews():
-            all_items.append(item)
-        
-        if not all_items:
+        items = []
+        async for item in self._simulation_engine.get_all_paged_simulation_overviews():
+            items.append(item)
+
+        if not items:
             logger.warning("No items found.")
             return PagedResponse(items=[], total_count=0, sorting_option="", sorting_order="")
 
-        for item in all_items:
-            logger.info(f"Simulation {item.id} - created at={item.created_date}")
-        
         return PagedResponse(
-            items=all_items,
-            total_count=len(all_items),
+            items=items,
+            total_count=len(items),
             sorting_option="",
-            sorting_order=""
+            sorting_order="",
         )
-    async def run_paged_overview_scenario(self):
-        page = await self._simulation_engine_client.get_all_paged_simulation_overviews()
-        
-        if not page:
-            logger.error("No response (error or empty).")
-            return
 
-        for item in page.items:
-            logger.info(f"Simulation {item.id} - created at={item.created_date}")
-        
-        return page
-    
-    async def run_get_iterationResults_by_simulationId(self, simulation_id):
-        page = await self._iteration_result_client.get_all_iterationResults_BySimulationId(simulation_id)
-        
-        if not page:
-            logger.error("No response (error or empty).")
-            return
-
-        logger.info(f"Total iteration results found: {page.total_count}")
-        
-        #logger.info(f" 1st iteration result __ {IterationResult.to_pretty_string(page.items[0])}")
-        #for item in page.items[0]:
-        #    logger.info(f"IterationResult {item.id} - index={item.team_strengths[0].posterior.defensive}")
-        
-        return page
-
+    async def run_get_iterationResults_by_simulationId(self, simulation_id: str):
+        return await self._iteration_results.get_all_iterationResults_BySimulationId(
+            simulation_id
+        )
 
     async def get_pending_simulations_to_sync(self):
-        synch = self._synchronization_service.get_synchronization()
-
-        if synch is None:
-            synch = Synchronization(
-                last_sync_date=datetime(1900, 1, 1),
-                added_simulations=0,
-            )
-
-        result = await self._simulation_engine_client.get_latest_simulationIds_by_date(
+        synch = self._synchronization.get_synchronization() or Synchronization(
+            last_sync_date=datetime(1900, 1, 1),
+            added_simulations=0,
+        )
+        result = await self._simulation_engine.get_latest_simulationIds_by_date(
             latest_date=synch.last_sync_date
         )
 
-        self._synchronization_service.save_synchronization(
-            Synchronization(last_sync_date=datetime.now(), added_simulations=len(result))
+        self._synchronization.save_synchronization(
+            Synchronization(
+                last_sync_date=datetime.now(),
+                added_simulations=len(result),
+            )
         )
 
-        logger.info(f"Date: {synch.last_sync_date} - Latest sync: {result}")
         return result

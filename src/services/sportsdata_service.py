@@ -1,11 +1,11 @@
 from src.adapters.grpc.client import league_round
 from src.core import get_logger
-from src.domain.entities import LeagueRound
+from src.di.ports.sportsdata_service_port import SportsDataServicePort
 
 logger = get_logger(__name__)
 
 
-class SportsDataService:
+class SportsDataService(SportsDataServicePort):
     def __init__(self, league_round_client: league_round.LeagueRoundClient):
         self._league_round_client = league_round_client
 
