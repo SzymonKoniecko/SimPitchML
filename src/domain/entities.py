@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, Iterable, Tuple, TypeVar, List
+from typing import Any, Dict, Generic, Iterable, Optional, Tuple, TypeVar, List
 import json
+
+import pandas as pd
 
 T = TypeVar("T")
 
@@ -157,15 +159,45 @@ class PagedResponse(Generic[T]):
     def has_next(self) -> bool:
         return self.page_number < self.total_pages - 1
 
+
 ### ML entities
 @dataclass(frozen=True)
 class Synchronization:
     last_sync_date: str
     added_simulations: int
 
+
 @dataclass(frozen=True)
 class TrainingData:
     x_row: dict[str, Any]
+    """Wektor cech (features) dla *jednego meczu* w postaci płaskiego słownika.
+    Klucze to nazwy cech (np. 'home_p_off', 'away_l_def', 'diff_post_off'), a wartości to liczby/typy
+    możliwe do wrzucenia do DataFrame i podania do XGBoost.
+    
+    To jest wejście modelu (X). Każdy TrainingData = 1 wiersz w DataFrame.
+    """
+
     y_home: int
+    """Target (etykieta) dla regresji bramek gospodarza.
+    Oznacza liczbę goli zdobytych przez drużynę gospodarzy w tym meczu (wartość rzeczywista z symulacji/wykonania).
+    
+    To jest wyjście uczące dla modelu 'home goals'.
+    """
+
     y_away: int
-    prev_round_id: str # its define a TeamStrength row, before the round started
+    """Target (etykieta) dla regresji bramek gości.
+    Oznacza liczbę goli zdobytych przez drużynę gości w tym meczu (wartość rzeczywista z symulacji/wykonania).
+    
+    To jest wyjście uczące dla modelu 'away goals'.
+    """
+
+    prev_round_id: str
+    """Identyfikator rundy (UUID) wskazujący snapshot wejściowych sił drużyn użyty do zbudowania x_row.
+    W Twoim modelu TeamStrength jest stanem *po meczu*, więc żeby przewidzieć mecz rundy N,
+    budujesz cechy z TeamStrength z rundy N-1 — i właśnie tę rundę reprezentuje prev_round_id.
+    
+    Użycia:
+    - join: (team_id, prev_round_id) -> TeamStrength dla home/away,
+    - split czasowy: pozwala przypisać rekord do kolejności rund (przez mapę LeagueRound: round_id -> round_no),
+      bez mieszania przyszłości z przeszłością.
+    """

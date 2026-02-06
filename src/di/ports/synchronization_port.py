@@ -1,0 +1,6 @@
+from typing import Optional, Protocol
+from src.domain.entities import Synchronization
+
+class SynchronizationPort(Protocol):
+    def get_synchronization(self) -> Optional[Synchronization]: ...
+    def save_synchronization(self, synchronization: Synchronization) -> None: ...

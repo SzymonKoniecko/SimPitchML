@@ -2,13 +2,13 @@ from typing import Optional
 import xgboost as xgb
 
 from src.core import get_logger
-from src.adapters.persistence.json_repository import JsonFileRepository
+from src.di.ports.adapters.json_file_repository_port import JsonFileRepositoryPort
 
 EXTENSION = "json"
 logger = get_logger(__name__) 
 
 class XgBoostContextService:
-    def __init__(self, repo: JsonFileRepository):
+    def __init__(self, repo: JsonFileRepositoryPort):
         self.repo = repo
 
     def save_league_model(self, model: xgb.Booster, league_id: str):

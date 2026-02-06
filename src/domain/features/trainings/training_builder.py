@@ -1,5 +1,11 @@
 from typing import Dict, List, Optional
-from src.domain.entities import LeagueRound, MatchResult, TeamStrength, TrainingData
+from src.domain.entities import (
+    IterationResult,
+    LeagueRound,
+    MatchResult,
+    TeamStrength,
+    TrainingData,
+)
 from src.domain.features import Mapper
 from src.core.logger import get_logger
 
@@ -10,6 +16,29 @@ GUID_EMPTY = "00000000-0000-0000-0000-000000000000"
 class TrainingBuilder:
     @staticmethod
     def build_dataset(
+        iteration_result: IterationResult, league_rounds: List[LeagueRound]
+    ) -> List[TrainingData]:
+        if (
+            iteration_result.simulated_match_rounds is None
+            or len(iteration_result.simulated_match_rounds) == 0
+        ):
+            raise ValueError("Value cannot be None = simulated_match_rounds")
+        if (
+            iteration_result.team_strengths is None
+            or len(iteration_result.team_strengths) == 0
+        ):
+            raise ValueError("Value cannot be None = team_strengths")
+        if league_rounds is None or len(league_rounds) == 0:
+            raise ValueError("Value cannot be None = league_rounds")
+        
+        return TrainingBuilder.build_dataset_from_scrap(
+            match_results=iteration_result.simulated_match_rounds,
+            team_strengths=iteration_result.team_strengths,
+            league_rounds=league_rounds,
+        )
+
+    @staticmethod
+    def build_dataset_from_scrap(
         match_results: List[MatchResult],
         team_strengths: List[TeamStrength],
         league_rounds: List[LeagueRound],
@@ -86,5 +115,5 @@ class TrainingBuilder:
             x_row=X_row,
             y_home=match_result.home_goals,
             y_away=match_result.away_goals,
-            prev_round_id=prev_round_id
+            prev_round_id=prev_round_id,
         )

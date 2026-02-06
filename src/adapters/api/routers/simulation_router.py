@@ -1,61 +1,24 @@
-"""
-src/adapters/api/routers/simulation_router.py
-REST Adapter (Controller)
-"""
-
 from fastapi import APIRouter, Depends, HTTPException
-from src.adapters.persistence.json_repository import JsonFileRepository
-from src.services import SimulationService
-from src.adapters.grpc.client import IterationResultClient, SimulationEngineClient
 from src.core import get_logger
-from src.services.synchronization_service import SynchronizationService
+from src.services import SimulationService
+from src.di import get_simulation_service
 
 logger = get_logger(__name__)
 router = APIRouter()
-
-
-async def get_sim_engine_grpc_client():
-    client = SimulationEngineClient()
-    try:
-        yield client
-    finally:
-        await client.close()
-
-
-async def get_iteration_result_grpc_client():
-    client = IterationResultClient()
-    try:
-        yield client
-    finally:
-        await client.close()
-
-
-async def get_synchronization_service():
-    service = SynchronizationService(JsonFileRepository())
-    return service
-
-
-# Dependency Injection: Fabryka serwisu
-def get_simulation_service(
-    sim_engine_client: SimulationEngineClient = Depends(get_sim_engine_grpc_client),
-    iteration_result_client: IterationResultClient = Depends(
-        get_iteration_result_grpc_client
-    ),
-    synch_service: SynchronizationService = Depends(get_synchronization_service),
-) -> SimulationService:
-    return SimulationService(sim_engine_client, iteration_result_client, synch_service)
 
 
 @router.get("/simulations/overviews/all")
 async def get_simulation_overview(
     service: SimulationService = Depends(get_simulation_service),
 ):
-    logger.info(f"API Request: run_all_overview_scenario())")
+    logger.info("API Request: run_all_overview_scenario()")
 
     result = await service.run_all_overview_scenario()
-    if not result:
+
+    if not result or not result.items:
         raise HTTPException(
-            status_code=404, detail="No simulations found or error occurred"
+            status_code=404,
+            detail="No simulations found or error occurred",
         )
 
     return {
@@ -72,18 +35,24 @@ async def get_simulation_overview(
 
 @router.get("/simulations/iterationresults")
 async def get_iteration_results(
-    simulation_id: str, service: SimulationService = Depends(get_simulation_service)
+    simulation_id: str,
+    service: SimulationService = Depends(get_simulation_service),
 ):
-    logger.info(f"API Request: get_iteration_results(simulation_id={simulation_id})")
+    logger.info(
+        "API Request: get_iteration_results(simulation_id=%s)",
+        simulation_id,
+    )
 
     result = await service.run_get_iterationResults_by_simulationId(
         simulation_id=simulation_id
     )
 
-    if not result:
+    if not result or not result.items:
         raise HTTPException(
-            status_code=404, detail="No iteration results found or error occurred"
+            status_code=404,
+            detail="No iteration results found or error occurred",
         )
+
     return {
         "total_count": result.total_count,
         "items": [
@@ -104,6 +73,8 @@ async def get_iteration_results(
 async def get_pending_simulations_to_sync(
     service: SimulationService = Depends(get_simulation_service),
 ):
+    logger.info("API Request: get_pending_simulations_to_sync()")
+
     result = await service.get_pending_simulations_to_sync()
 
-    return [{"id": item} for item in result]
+    return [{"id": simulation_id} for simulation_id in result]
