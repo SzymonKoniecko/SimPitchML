@@ -17,7 +17,7 @@ class TrainingBuilder:
     @staticmethod
     def build_dataset(
         iteration_result: IterationResult, league_rounds: List[LeagueRound]
-    ) -> Tuple[List[TrainingData], Dict[str, str]]:
+    ) -> List[TrainingData]:
         if (
             iteration_result.simulated_match_rounds is None
             or len(iteration_result.simulated_match_rounds) == 0
@@ -42,7 +42,7 @@ class TrainingBuilder:
         match_results: List[MatchResult],
         team_strengths: List[TeamStrength],
         league_rounds: List[LeagueRound],
-    ) -> Tuple[List[TrainingData], Dict[str, str]]:
+    ) -> List[TrainingData]:
         
         dataset: List[TrainingData] = []
         # Map: round_id -> prev_round_id (z uwzględnieniem Guid.Empty w Mapperze, jeśli to tam robisz)
@@ -74,7 +74,7 @@ class TrainingBuilder:
             if td is not None:
                 dataset.append(td)
 
-        return dataset, prev_round_id_by_round_id
+        return dataset
 
     @staticmethod
     def build_single_training_data(

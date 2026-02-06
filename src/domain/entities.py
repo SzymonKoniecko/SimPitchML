@@ -202,6 +202,10 @@ class TrainingData:
       bez mieszania przyszłości z przeszłością.
     """
 
+@dataclass(frozen=True)
+class TrainingDataset:
+    train: List[TrainingData]
+    test: List[TrainingData]
 
 @dataclass(frozen=True)
 class PredictRequest():

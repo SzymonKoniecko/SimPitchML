@@ -5,6 +5,7 @@ from src.domain.entities import (
     Synchronization,
     TrainingData,
     PredictRequest,
+    TrainingDataset
 )
 
 __all__ = [
@@ -14,4 +15,5 @@ __all__ = [
     "Synchronization",
     "TrainingData",
     "PredictRequest",
+    "TrainingDataset"
 ]

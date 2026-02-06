@@ -11,6 +11,9 @@ from .ports.sportsdata_service_port import SportsDataServicePort
 from .ports.adapters.json_file_repository_port import JsonFileRepositoryPort
 from .ports.adapters.league_round_port import LeagueRoundPort
 from .ports.adapters.iteration_result_port import IterationResultPort
+from .ports.xgboost.xgboost_context_service_port import XgboostContextServicePort
+from .ports.xgboost.xgboost_service_port import XgboostServicePort
+
 
 __all__ = [
     "get_json_repo",
@@ -24,5 +27,8 @@ __all__ = [
     "SportsDataServicePort",
     "JsonFileRepositoryPort",
     "LeagueRoundPort",
-    "IterationResultPort"
+    "IterationResultPort",
+
+    "XgboostContextServicePort",
+    "XgboostServicePort"
 ]

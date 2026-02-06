@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional, Tuple
-from src.domain.entities import TrainingData
+from src.domain.entities import TrainingData, TrainingDataset
 
 
 class TrainingSplit:
@@ -9,7 +9,7 @@ class TrainingSplit:
         round_no_by_round_id: Dict[str, int],
         train_until_round_no: Optional[int] = None,
         train_ratio: float = 0.8,
-    ) -> Tuple[List[TrainingData], List[TrainingData]]:
+    ) -> TrainingDataset:
         """
         Splituje dataset po rundach (czasowo), bez shuffle.
 
@@ -56,4 +56,4 @@ class TrainingSplit:
             else:
                 test.append(item)
 
-        return train, test
+        return TrainingDataset(train=train, test= test)

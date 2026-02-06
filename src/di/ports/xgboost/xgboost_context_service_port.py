@@ -1,0 +1,6 @@
+import xgboost as xgb
+from typing import Optional, Protocol
+
+class XgboostContextServicePort(Protocol):
+    def save_league_model(self, model: xgb.Booster, league_id: str): ...
+    def load_league_model(self, league_id: str) -> Optional[xgb.Booster]: ...
