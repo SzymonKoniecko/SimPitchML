@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 from src.core import get_logger
 from src.domain.entities import PredictRequest
 from src.services import SimulationService
-from src.di import get_simulation_service
+from src.di.services import get_simulation_service
 
 logger = get_logger(__name__)
 router = APIRouter()

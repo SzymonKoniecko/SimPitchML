@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.services import SportsDataService
 from src.adapters.grpc.client import LeagueRoundClient
 from src.core import get_logger
-from src.di import get_sportsdata_service
+from src.di.services import get_sportsdata_service
 
 logger = get_logger(__name__)
 router = APIRouter()
