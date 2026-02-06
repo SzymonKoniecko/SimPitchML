@@ -1,26 +1,21 @@
-
 from datetime import datetime
 from dataclasses import asdict
 from typing import Optional
-from src.core import get_logger
-from src.adapters.persistence.json_repository import JsonFileRepository
-from src.adapters.grpc.client import simulation_engine
-import json
-
 from src.domain.entities import Synchronization
+from src.services.ports.synchronization_port import SynchronizationPort
+from src.services.ports.adapters.json_file_repository_port import (
+    JsonFileRepositoryPort,
+)
 
 EXTENSION = "json"
-logger = get_logger(__name__) 
 
-class SynchronizationService:
-    def __init__(self, repo: JsonFileRepository):
-        self.repo = repo
-
-
+class SynchronizationService(SynchronizationPort):
+    def __init__(self, repo: JsonFileRepositoryPort):
+        self._repo = repo
 
     def get_synchronization(self) -> Optional[Synchronization]:
         filename = f"sync.{EXTENSION}"
-        data = self.repo.load(filename)
+        data = self._repo.load(filename)
 
         if data is None:
             return None
@@ -36,8 +31,7 @@ class SynchronizationService:
 
         payload = asdict(synchronization)
 
-        # konwersja datetime -> ISO string (JSON-friendly)
         if isinstance(payload.get("last_sync_date"), datetime):
             payload["last_sync_date"] = payload["last_sync_date"].isoformat()
 
-        self.repo.save(filename=filename, data=payload)
+        self._repo.save(filename=filename, data=payload)

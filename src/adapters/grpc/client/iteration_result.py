@@ -11,6 +11,7 @@ from src.generatedSimulationProtos.SimulationService.IterationResult import serv
 from src.generatedSimulationProtos.SimulationService import commonTypes_pb2
 from src.domain.entities import IterationResult, PagedResponse
 from src.core import get_logger, SimulationGrpcConfig
+from src.services.ports.adapters.iteration_result_port import IterationResultPort
 
 logger = get_logger(__name__)
 
@@ -19,7 +20,7 @@ try:
 except ValueError:
     BATCH_LIMIT = 100
 
-class IterationResultClient(BaseGrpcClient):
+class IterationResultClient(BaseGrpcClient, IterationResultPort):
     def __init__(self, grpc_config: Optional[SimulationGrpcConfig] = None):
         super().__init__(grpc_config)
         self.stub = service_pb2_grpc.IterationResultServiceStub(self.channel)

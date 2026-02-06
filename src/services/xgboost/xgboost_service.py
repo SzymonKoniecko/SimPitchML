@@ -1,9 +1,9 @@
-from src.generatedSimulationProtos import SimulationService
-from src.services import XgBoostContextService
 from src.domain.features.trainings import training_builder, training_split
+from src.services.ports.simulation_service_port import SimulationServicePort
+from src.services.xgboost.xgboost_context_service import XgBoostContextService
 
 class XgboostService:
-    def __init__(self, context: XgBoostContextService, simService: SimulationService):
+    def __init__(self, context: XgBoostContextService, simService: SimulationServicePort):
         self._context = context
         self._simService = simService
 

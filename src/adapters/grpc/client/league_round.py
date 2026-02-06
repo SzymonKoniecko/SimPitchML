@@ -10,11 +10,12 @@ from src.generatedSportsDataProtos.SportsDataService.LeagueRound import (
     requests_pb2,
 )
 from src.domain.entities import LeagueRound
+from src.services.ports.adapters.league_round_port import LeagueRoundPort
 
 logger = get_logger(__name__)
 
 
-class LeagueRoundClient(BaseGrpcClient):
+class LeagueRoundClient(BaseGrpcClient, LeagueRoundPort):
     def __init__(self, grpc_config: Optional[SportsDataGrpcConfig] = None):
         super().__init__(grpc_config or app_config.sportsdata_grpc)
         self.stub = service_pb2_grpc.LeagueRoundServiceStub(self.channel)

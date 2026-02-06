@@ -1,7 +1,3 @@
-"""
-Klient gRPC do serwisu SimulationEngine.
-"""
-
 from __future__ import annotations
 
 from datetime import datetime
@@ -10,6 +6,7 @@ import os
 import grpc
 
 from src.adapters.grpc.client.baseGrpc import BaseGrpcClient
+from src.services.ports.adapters.simulation_engine_port import SimulationEnginePort
 from src.core import get_logger, SimulationGrpcConfig, config as app_config
 from src.domain.entities import SimulationOverview, PagedResponse
 from src.generatedSimulationProtos.SimulationService import commonTypes_pb2
@@ -26,7 +23,12 @@ except ValueError:
     BATCH_LIMIT = 100
 
 
-class SimulationEngineClient(BaseGrpcClient):
+class SimulationEngineClient(BaseGrpcClient, SimulationEnginePort):
+    """
+    Adapter gRPC do zewnętrznego SimulationEngine.
+    Implementuje SimulationEnginePort.
+    """
+
     def __init__(self, grpc_config: Optional[SimulationGrpcConfig] = None):
         super().__init__(grpc_config or app_config.simulation_grpc)
         self.stub = service_pb2_grpc.SimulationEngineServiceStub(self.channel)
@@ -44,7 +46,7 @@ class SimulationEngineClient(BaseGrpcClient):
             resp = await self.stub.GetAllSimulationOverviews(
                 req,
                 timeout=self.grpc_config.timeout_seconds,
-            )  # timeout per-call [web:18]
+            )
 
             items = [
                 SimulationOverview(
@@ -62,6 +64,7 @@ class SimulationEngineClient(BaseGrpcClient):
                 sorting_option=resp.paged.sorting_option,
                 sorting_order=resp.paged.sorting_order,
             )
+
         except grpc.RpcError as e:
             logger.exception(
                 "GetAllSimulationOverviews failed",
@@ -69,7 +72,9 @@ class SimulationEngineClient(BaseGrpcClient):
             )
             return None
 
-    async def get_all_paged_simulation_overviews(self) -> AsyncIterator[SimulationOverview]:
+    async def get_all_paged_simulation_overviews(
+        self,
+    ) -> AsyncIterator[SimulationOverview]:
         current_offset = 0
 
         while True:
@@ -79,7 +84,7 @@ class SimulationEngineClient(BaseGrpcClient):
             )
 
             if not page or not page.items:
-                logger.warning("No simulation overviews or empty page.items.")
+                logger.warning("No simulation overviews or empty page.")
                 break
 
             for item in page.items:
@@ -99,16 +104,18 @@ class SimulationEngineClient(BaseGrpcClient):
             formatted_date_str = latest_date
         else:
             raise TypeError(
-                f"Invalid type for latest_date: {type(latest_date)}. Expected str or datetime."
+                f"Invalid type for latest_date: {type(latest_date)}"
             )
 
-        request = requests_pb2.GetLatestSimulationIdsRequest(date=formatted_date_str)
+        request = requests_pb2.GetLatestSimulationIdsRequest(
+            date=formatted_date_str
+        )
 
         try:
             result = await self.stub.GetLatestSimulationIds(
                 request,
                 timeout=self.grpc_config.timeout_seconds,
-            )  # timeout per-call [web:18]
+            )
         except grpc.RpcError as e:
             logger.exception(
                 "GetLatestSimulationIds failed",

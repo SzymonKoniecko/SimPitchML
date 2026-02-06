@@ -32,11 +32,3 @@ class BaseGrpcClient:
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
         await self.close()
-
-class SimulationEngineClient(BaseGrpcClient):
-    def __init__(self, grpc_config: Optional[SimulationGrpcConfig] = None):
-        super().__init__(grpc_config or app_config.simulation_grpc)
-
-class LeagueRoundClient(BaseGrpcClient):
-    def __init__(self, grpc_config: Optional[SportsDataGrpcConfig] = None):
-        super().__init__(grpc_config or app_config.sportsdata_grpc)

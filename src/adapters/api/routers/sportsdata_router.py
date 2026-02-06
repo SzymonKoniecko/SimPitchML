@@ -7,24 +7,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from src.services import SportsDataService
 from src.adapters.grpc.client import LeagueRoundClient
 from src.core import get_logger
+from src.di import get_sportsdata_service
 
 logger = get_logger(__name__)
 router = APIRouter()
-
-
-async def get_league_round_grpc_client():
-    client = LeagueRoundClient()
-    try:
-        yield client
-    finally:
-        await client.close()
-
-
-# Dependency Injection: Fabryka serwisu
-def get_sportsdata_service(
-    league_round_client: LeagueRoundClient = Depends(get_league_round_grpc_client),
-) -> SportsDataService:
-    return SportsDataService(league_round_client)
 
 
 @router.get("/sportsdata/leagueRounds")
