@@ -1,9 +1,17 @@
-from src.domain.entities import SimulationOverview, PagedResponse, IterationResult, Synchronization, TrainingData
+from src.domain.entities import (
+    SimulationOverview,
+    PagedResponse,
+    IterationResult,
+    Synchronization,
+    TrainingData,
+    PredictRequest,
+)
 
 __all__ = [
     "IterationResult",
     "SimulationOverview",
     "PagedResponse",
     "Synchronization",
-    "TrainingData"
+    "TrainingData",
+    "PredictRequest",
 ]

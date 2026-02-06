@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from src.domain.entities import (
     IterationResult,
     LeagueRound,
@@ -17,7 +17,7 @@ class TrainingBuilder:
     @staticmethod
     def build_dataset(
         iteration_result: IterationResult, league_rounds: List[LeagueRound]
-    ) -> List[TrainingData]:
+    ) -> Tuple[List[TrainingData], Dict[str, str]]:
         if (
             iteration_result.simulated_match_rounds is None
             or len(iteration_result.simulated_match_rounds) == 0
@@ -42,9 +42,9 @@ class TrainingBuilder:
         match_results: List[MatchResult],
         team_strengths: List[TeamStrength],
         league_rounds: List[LeagueRound],
-    ) -> List[TrainingData]:
+    ) -> Tuple[List[TrainingData], Dict[str, str]]:
+        
         dataset: List[TrainingData] = []
-
         # Map: round_id -> prev_round_id (z uwzględnieniem Guid.Empty w Mapperze, jeśli to tam robisz)
         prev_round_id_by_round_id: Dict[str, str] = (
             Mapper.map_prev_round_id_by_round_id(

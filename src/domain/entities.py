@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Generic, Iterable, Optional, Tuple, TypeVar, List
+from typing import Any, Dict, Generic, Iterable, Optional, Tuple, TypeVar, List, Union
 import json
 
 import pandas as pd
@@ -201,3 +201,11 @@ class TrainingData:
     - split czasowy: pozwala przypisać rekord do kolejności rund (przez mapę LeagueRound: round_id -> round_no),
       bez mieszania przyszłości z przeszłością.
     """
+
+
+@dataclass(frozen=True)
+class PredictRequest():
+    league_id: str
+    train_until_round_no: int
+    train_ratio: float = 0.8
+    ...

@@ -40,8 +40,9 @@ def get_simulation_service(
     engine = Depends(get_sim_engine_client),
     iteration_results = Depends(get_iteration_result_client),
     synchronization = Depends(get_synchronization_service),
+    league_round = Depends(get_league_round_client)
 ):
-    return SimulationService(engine, iteration_results, synchronization)
+    return SimulationService(engine, iteration_results, synchronization, league_round)
 
 def get_sportsdata_service(
     league_round = Depends(get_league_round_client)
