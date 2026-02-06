@@ -10,7 +10,7 @@ from src.generatedSportsDataProtos.SportsDataService.LeagueRound import (
     requests_pb2,
 )
 from src.domain.entities import LeagueRound
-from src.services.ports.adapters.league_round_port import LeagueRoundPort
+from src.di.ports.adapters.league_round_port import LeagueRoundPort
 
 logger = get_logger(__name__)
 

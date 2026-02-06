@@ -2,9 +2,9 @@
 from datetime import datetime
 from src.core import get_logger
 from src.domain.entities import PagedResponse, Synchronization
-from src.services.ports.adapters.simulation_engine_port import SimulationEnginePort
-from src.services.ports.adapters.iteration_result_port import IterationResultPort
-from src.services.ports.synchronization_port import SynchronizationPort
+from src.di.ports.adapters.simulation_engine_port import SimulationEnginePort
+from src.di.ports.adapters.iteration_result_port import IterationResultPort
+from src.di.ports.synchronization_port import SynchronizationPort
 
 logger = get_logger(__name__)
 
@@ -45,7 +45,6 @@ class SimulationService:
             last_sync_date=datetime(1900, 1, 1),
             added_simulations=0,
         )
-
         result = await self._simulation_engine.get_latest_simulationIds_by_date(
             latest_date=synch.last_sync_date
         )

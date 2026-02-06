@@ -2,11 +2,10 @@ from datetime import datetime
 from dataclasses import asdict
 from typing import Optional
 from src.domain.entities import Synchronization
-from src.services.ports.synchronization_port import SynchronizationPort
-from src.services.ports.adapters.json_file_repository_port import (
+from src.di.ports.synchronization_port import SynchronizationPort
+from src.di.ports.adapters.json_file_repository_port import (
     JsonFileRepositoryPort,
 )
-
 EXTENSION = "json"
 
 class SynchronizationService(SynchronizationPort):

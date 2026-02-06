@@ -1,8 +1,9 @@
 from fastapi import Depends
+from src.adapters.grpc.client.iteration_result import IterationResultClient
 from src.adapters.grpc.client.league_round import LeagueRoundClient
-from src.services.simulation_service import SimulationService
-from src.adapters.grpc.client import SimulationEngineClient, IterationResultClient
+from src.adapters.grpc.client.simulation_engine import SimulationEngineClient
 from src.adapters.persistence.json_repository import JsonFileRepository
+from src.services.simulation_service import SimulationService
 from src.services.sportsdata_service import SportsDataService
 from src.services.synchronization_service import SynchronizationService
 

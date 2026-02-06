@@ -1,5 +1,5 @@
 from src.domain.features.trainings import training_builder, training_split
-from src.services.ports.simulation_service_port import SimulationServicePort
+from src.di import SimulationServicePort
 from src.services.xgboost.xgboost_context_service import XgBoostContextService
 
 class XgboostService:

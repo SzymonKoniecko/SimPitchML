@@ -6,7 +6,7 @@ import os
 import grpc
 
 from src.adapters.grpc.client.baseGrpc import BaseGrpcClient
-from src.services.ports.adapters.simulation_engine_port import SimulationEnginePort
+from src.di.ports.adapters.simulation_engine_port import SimulationEnginePort
 from src.core import get_logger, SimulationGrpcConfig, config as app_config
 from src.domain.entities import SimulationOverview, PagedResponse
 from src.generatedSimulationProtos.SimulationService import commonTypes_pb2

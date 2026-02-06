@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from src.core import get_logger
-from src.services.simulation_service import SimulationService
+from src.services import SimulationService
 from src.di import get_simulation_service
 
 logger = get_logger(__name__)

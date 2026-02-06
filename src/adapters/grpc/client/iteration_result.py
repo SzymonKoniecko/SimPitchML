@@ -11,7 +11,7 @@ from src.generatedSimulationProtos.SimulationService.IterationResult import serv
 from src.generatedSimulationProtos.SimulationService import commonTypes_pb2
 from src.domain.entities import IterationResult, PagedResponse
 from src.core import get_logger, SimulationGrpcConfig
-from src.services.ports.adapters.iteration_result_port import IterationResultPort
+from src.di.ports.adapters.iteration_result_port import IterationResultPort
 
 logger = get_logger(__name__)
 

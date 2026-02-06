@@ -1,6 +1,6 @@
 from src.adapters.grpc.client import league_round
 from src.core import get_logger
-from src.services.ports.sportsdata_service_port import SportsDataServicePort
+from src.di.ports.sportsdata_service_port import SportsDataServicePort
 
 logger = get_logger(__name__)
 
