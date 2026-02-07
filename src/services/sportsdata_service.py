@@ -1,6 +1,7 @@
 from typing import List
-from src.adapters.grpc.client import league_round, match_round
 from src.core import get_logger
+from src.di.ports.adapters.league_round_port import LeagueRoundPort
+from src.di.ports.adapters.match_round_port import MatchRoundPort
 from src.di.ports.sportsdata_service_port import SportsDataServicePort
 from src.domain.entities import LeagueRound, MatchRound
 
@@ -10,8 +11,8 @@ logger = get_logger(__name__)
 class SportsDataService(SportsDataServicePort):
     def __init__(
         self,
-        league_round_client: league_round.LeagueRoundClient,
-        match_round_client: match_round.MatchRoundClient,
+        league_round_client: LeagueRoundPort,
+        match_round_client: MatchRoundPort,
     ):
         self._league_round_client = league_round_client
         self._match_rounds_client = match_round_client

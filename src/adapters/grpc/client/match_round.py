@@ -13,8 +13,8 @@ logger = get_logger(__name__)
 
 
 class MatchRoundClient(BaseGrpcClient, MatchRoundPort):
-    def __init__(self, grpc_config: Optional[SportsDataGrpcConfig] = None):
-        super().__init__(grpc_config)
+    def __init__(self):
+        super().__init__(app_config.sportsdata_grpc)
         self.stub = service_pb2_grpc.MatchRoundServiceStub(self.channel)
 
     async def get_match_rounds_by_round_id(
