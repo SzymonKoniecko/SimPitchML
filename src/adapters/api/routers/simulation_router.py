@@ -1,17 +1,29 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from src.core import get_logger
+from src.domain.entities import PredictRequest
 from src.services import SimulationService
-from src.di import get_simulation_service
+from src.di.services import get_simulation_service
 
 logger = get_logger(__name__)
 router = APIRouter()
 
+@router.post("/simulations/predict")
+async def post_simulation(
+    body: PredictRequest = Body(...),
+    service: SimulationService = Depends(get_simulation_service)
+):
+    logger.info(f"API Request POST: post_simulation() with body={body}")
+    
+    result = await service.init_prediction(body)
+    
+    # Make sure to return a JSON-serializable type
+    return {"result": result}
 
 @router.get("/simulations/overviews/all")
 async def get_simulation_overview(
     service: SimulationService = Depends(get_simulation_service),
 ):
-    logger.info("API Request: run_all_overview_scenario()")
+    logger.info("API Request GET: run_all_overview_scenario()")
 
     result = await service.run_all_overview_scenario()
 
@@ -39,7 +51,7 @@ async def get_iteration_results(
     service: SimulationService = Depends(get_simulation_service),
 ):
     logger.info(
-        "API Request: get_iteration_results(simulation_id=%s)",
+        "API Request GET: get_iteration_results(simulation_id=%s)",
         simulation_id,
     )
 
@@ -73,7 +85,7 @@ async def get_iteration_results(
 async def get_pending_simulations_to_sync(
     service: SimulationService = Depends(get_simulation_service),
 ):
-    logger.info("API Request: get_pending_simulations_to_sync()")
+    logger.info("API Request GET: get_pending_simulations_to_sync()")
 
     result = await service.get_pending_simulations_to_sync()
 

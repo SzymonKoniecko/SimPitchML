@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 class GrpcConfig(Protocol):
     address: str
     timeout_seconds: float
-#test mergeeee vscode#test merge vscode
+
 class BaseGrpcClient:
     def __init__(self, grpc_config: Optional[GrpcConfig] = None):
         self.grpc_config: GrpcConfig = grpc_config or app_config.simulation_grpc

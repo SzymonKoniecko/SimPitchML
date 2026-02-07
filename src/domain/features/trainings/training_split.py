@@ -1,6 +1,8 @@
 from typing import Dict, List, Optional, Tuple
-from src.domain.entities import TrainingData
+from src.domain.entities import TrainingData, TrainingDataset
+from src.core.logger import get_logger
 
+logger = get_logger(__name__)
 
 class TrainingSplit:
     @staticmethod
@@ -9,7 +11,7 @@ class TrainingSplit:
         round_no_by_round_id: Dict[str, int],
         train_until_round_no: Optional[int] = None,
         train_ratio: float = 0.8,
-    ) -> Tuple[List[TrainingData], List[TrainingData]]:
+    ) -> TrainingDataset:
         """
         Splituje dataset po rundach (czasowo), bez shuffle.
 
@@ -24,6 +26,7 @@ class TrainingSplit:
         """
         if not dataset:
             return [], []
+        
 
         # 1) Odfiltruj rekordy bez znanego round_no (bo nie ma rundy 0 w LeagueRound)
         sortable: List[tuple[int, TrainingData]] = []
@@ -41,6 +44,31 @@ class TrainingSplit:
 
         # 3) Wyznacz cutoff
         unique_rounds = sorted({rn for rn, _ in sortable})
+
+        min_rn = unique_rounds[0]
+        max_rn = unique_rounds[-1]
+
+        if train_until_round_no is not None:
+            if train_until_round_no < min_rn:
+                logger.warning(
+                    "Split: All data will go to TEST because cutoff_round=%s is below min_round_in_data=%s "
+                    "(no rn <= cutoff). Consider increasing train_until_round_no or using ratio-based split.",
+                    train_until_round_no, min_rn
+                )
+            elif train_until_round_no >= max_rn:
+                logger.warning(
+                    "Split: All data will go to TRAIN because cutoff_round=%s is >= max_round_in_data=%s "
+                    "(all rn <= cutoff). Consider decreasing train_until_round_no.",
+                    train_until_round_no, max_rn
+                )
+        else:
+            if len(unique_rounds) == 1:
+                logger.warning(
+                    "Split: Only one unique round (%s) present in data; time-based split will be degenerate "
+                    "(train or test may be empty depending on cutoff).",
+                    unique_rounds[0]
+                )
+
         if train_until_round_no is None:
             # cutoff po liczbie rund, a nie po liczbie rekordów (stabilniejsze w piłce)
             k = max(1, int(len(unique_rounds) * train_ratio))
@@ -56,4 +84,11 @@ class TrainingSplit:
             else:
                 test.append(item)
 
-        return train, test
+        from collections import Counter
+        counts = Counter(rn for rn, _ in sortable)
+        logger.info(
+            "Split: rounds_hist=" +
+            ", ".join(f"{rn}:{counts[rn]}" for rn in unique_rounds)
+        )
+
+        return TrainingDataset(train=train, test= test)

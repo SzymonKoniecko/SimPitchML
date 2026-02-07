@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from src.domain.entities import (
     IterationResult,
     LeagueRound,
@@ -43,8 +43,8 @@ class TrainingBuilder:
         team_strengths: List[TeamStrength],
         league_rounds: List[LeagueRound],
     ) -> List[TrainingData]:
+        
         dataset: List[TrainingData] = []
-
         # Map: round_id -> prev_round_id (z uwzględnieniem Guid.Empty w Mapperze, jeśli to tam robisz)
         prev_round_id_by_round_id: Dict[str, str] = (
             Mapper.map_prev_round_id_by_round_id(

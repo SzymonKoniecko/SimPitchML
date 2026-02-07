@@ -26,9 +26,10 @@ class XgBoostContextService:
         full_path_object = self.repo.get_full_path(filename)
 
         if not full_path_object.exists():
-            return None
+            return xgb.Booster()
 
         model = xgb.Booster()
         model.load_model(str(full_path_object))
+        model
         logger.info(">> Model XGBOOST loaded - name:{filename}")
         return model

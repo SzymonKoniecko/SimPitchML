@@ -1,13 +1,17 @@
+from typing import List, Tuple
+from src.di.ports.xgboost.xgboost_context_service_port import XgboostContextServicePort
+from src.domain.entities import PredictRequest, TrainingData, TrainingDataset
 from src.domain.features.trainings import training_builder, training_split
-from src.di import SimulationServicePort
-from src.services.xgboost.xgboost_context_service import XgBoostContextService
+import xgboost as xgb
+import pandas as pd
 
 class XgboostService:
-    def __init__(self, context: XgBoostContextService, simService: SimulationServicePort):
+    def __init__(self, context: XgboostContextServicePort):
         self._context = context
-        self._simService = simService
 
+    async def train_evaluate_and_save(self, predictRequest: PredictRequest, t_dataset: TrainingDataset):
+        model = self.get_model(predictRequest)
+        return t_dataset
 
-    def sync_and_get_model(self):
-        ...
-        #pending_simulations = self._simService.get
+    async def get_model(self, predictRequest: PredictRequest):
+        return await self._context.load_league_model(predictRequest.league_id)
