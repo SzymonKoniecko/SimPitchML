@@ -12,8 +12,8 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
-from SportsDataService.LeagueRound import requests_pb2 as SportsDataService_dot_LeagueRound_dot_requests__pb2
-from SportsDataService.LeagueRound import responses_pb2 as SportsDataService_dot_LeagueRound_dot_responses__pb2
+from src.generatedSportsDataProtos.SportsDataService.LeagueRound import requests_pb2 as SportsDataService_dot_LeagueRound_dot_requests__pb2
+from src.generatedSportsDataProtos.SportsDataService.LeagueRound import responses_pb2 as SportsDataService_dot_LeagueRound_dot_responses__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n+SportsDataService/LeagueRound/service.proto\x12,SimPitchProtos.SportsDataService.LeagueRound\x1a,SportsDataService/LeagueRound/requests.proto\x1a-SportsDataService/LeagueRound/responses.proto2\xca\x01\n\x12LeagueRoundService\x12\xb3\x01\n\x1aGetAllLeagueRoundsByParams\x12I.SimPitchProtos.SportsDataService.LeagueRound.LeagueRoundsByParamsRequest\x1aJ.SimPitchProtos.SportsDataService.LeagueRound.LeagueRoundsByParamsResponseB/\xaa\x02,SimPitchProtos.SportsDataService.LeagueRoundb\x06proto3')

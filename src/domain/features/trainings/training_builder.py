@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Tuple
 from src.domain.entities import (
     IterationResult,
     LeagueRound,
-    MatchResult,
+    MatchRound,
     TeamStrength,
     TrainingData,
 )
@@ -39,7 +39,7 @@ class TrainingBuilder:
 
     @staticmethod
     def build_dataset_from_scrap(
-        match_results: List[MatchResult],
+        match_results: List[MatchRound],
         team_strengths: List[TeamStrength],
         league_rounds: List[LeagueRound],
     ) -> List[TrainingData]:
@@ -78,7 +78,7 @@ class TrainingBuilder:
 
     @staticmethod
     def build_single_training_data(
-        match_result: MatchResult,
+        match_result: MatchRound,
         home_strength: Optional[TeamStrength],
         away_strength: Optional[TeamStrength],
         prev_round_id: str,

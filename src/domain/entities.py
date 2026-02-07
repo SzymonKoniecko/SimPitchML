@@ -29,7 +29,7 @@ class IterationResult:
     start_date: str
     execution_time: str
     team_strengths: List[TeamStrength]
-    simulated_match_rounds: List[MatchResult]
+    simulated_match_rounds: List[MatchRound]
 
     @staticmethod
     def from_team_strength_raw(data: Union[str, List[Dict]]) -> List[TeamStrength]:
@@ -66,7 +66,7 @@ class IterationResult:
         ]
 
     @staticmethod
-    def from_sim_matches_raw(data: Union[str, List[Dict]]) -> List[MatchResult]:
+    def from_sim_matches_raw(data: Union[str, List[Dict]]) -> List[MatchRound]:
         if data is None:
             return []
 
@@ -77,7 +77,7 @@ class IterationResult:
                 return []
 
         return [
-            MatchResult(
+            MatchRound(
                 id=item.get("Id") or item.get("id"),
                 round_id=item.get("RoundId") or item.get("round_id"),
                 home_team_id=item.get("HomeTeamId") or item.get("home_team_id"),
@@ -100,7 +100,7 @@ class IterationResult:
 
 
 @dataclass(frozen=True)
-class MatchResult:
+class MatchRound:
     id: str
     round_id: str
     home_team_id: str
