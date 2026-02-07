@@ -17,14 +17,14 @@ python3 -m grpc_tools.protoc \
 
 
 mkdir -p ./src/generatedSportsDataProtos    
-python3 -m grpc_tools.protoc \                                                                      
-  -Iproto \
+python3 -m grpc_tools.protoc -Iproto \
   --python_out=./src/generatedSportsDataProtos \
   --grpc_python_out=./src/generatedSportsDataProtos \
-  proto/SportsDataService/LeagueRound/service.proto \
-  proto/SportsDataService/LeagueRound/requests.proto \
-  proto/SportsDataService/LeagueRound/responses.proto \
+  proto/SportsDataService/MatchRound/service.proto \
+  proto/SportsDataService/MatchRound/requests.proto \
+  proto/SportsDataService/MatchRound/responses.proto \
   proto/SportsDataService/commonTypes.proto
+
 
 find ./src/generated/simulation -type d -not -path "*/__pycache__*" -exec touch {}/__init__.py \;
 
