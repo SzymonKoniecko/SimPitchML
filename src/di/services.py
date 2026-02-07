@@ -54,17 +54,18 @@ def get_xgboost_service(context=Depends(get_xgboost_context_service)):
     return XgboostService(context)
 
 
+def get_sportsdata_service(league_round=Depends(get_league_round_client)):
+    return SportsDataService(league_round_client=league_round)
+
+
 def get_simulation_service(
     engine=Depends(get_sim_engine_client),
     iteration_results=Depends(get_iteration_result_client),
     synchronization=Depends(get_synchronization_service),
-    league_round=Depends(get_league_round_client),
+    sportsdata_service=Depends(get_sportsdata_service),
     xgboost_service=Depends(get_xgboost_service),
 ):
     return SimulationService(
-        engine, iteration_results, synchronization, league_round, xgboost_service
+        engine, iteration_results, synchronization, sportsdata_service, xgboost_service
     )
 
-
-def get_sportsdata_service(league_round=Depends(get_league_round_client)):
-    return SportsDataService(league_round_client=league_round)
