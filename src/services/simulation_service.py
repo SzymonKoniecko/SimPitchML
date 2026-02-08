@@ -50,7 +50,7 @@ class SimulationService:
 
         list_simulation_ids = await self.get_pending_simulations_to_sync()
         rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
-            req_league_id=predict_request.league_id
+            league_id=predict_request.league_id
         )
         all_match_rounds = (
             await self._sportsdata_service.get_match_rounds_by_league_rounds(rounds)

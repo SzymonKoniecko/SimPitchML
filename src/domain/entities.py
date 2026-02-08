@@ -125,7 +125,7 @@ class StrengthItem:
     defensive: float
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class TeamStrength:
     team_id: str
     likelihood: StrengthItem
@@ -140,6 +140,26 @@ class TeamStrength:
         items: Iterable["TeamStrength"],
     ) -> Dict[Tuple[str, str], "TeamStrength"]:
         return {(ts.team_id, ts.round_id): ts for ts in items}
+    
+    @staticmethod
+    def league_average_baseline(
+        *,
+        round_id: str = "LEAGUE_AVG",
+        last_update: str = "2001-01-01T22:00:00.000000",
+        expected_goals: str = "N/A",
+        offensive: float = 1.0,
+        defensive: float = 1.0,
+        team_id: str = "LEAGUE_AVG",
+    ) -> "TeamStrength":
+        # Baseline: neutralna drużyna = średnia ligowa (1.0, 1.0)
+        return TeamStrength(
+            team_id=team_id,
+            likelihood=StrengthItem(offensive=offensive, defensive=defensive),
+            posterior=StrengthItem(offensive=offensive, defensive=defensive),
+            expected_goals=expected_goals,
+            last_update=last_update,
+            round_id=round_id,
+        )
 
 
 # @dataclass(frozen=True)

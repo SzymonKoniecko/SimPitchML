@@ -18,12 +18,11 @@ class TrainingBuilder:
     def build_dataset(
         iteration_result: IterationResult,
         league_rounds: List[LeagueRound],
-        match_rounds: List[MatchRound], # simulated_match_rounds but with the played matched BEFORE simulation
+        match_rounds: List[
+            MatchRound
+        ],  # simulated_match_rounds but with the played matched BEFORE simulation
     ) -> List[TrainingData]:
-        if (
-            iteration_result.match_rounds is None
-            or len(iteration_result.match_rounds) == 0
-        ):
+        if match_rounds is None or len(match_rounds) == 0:
             raise ValueError("Value cannot be None = match_rounds")
         if (
             iteration_result.team_strengths is None
@@ -34,7 +33,7 @@ class TrainingBuilder:
             raise ValueError("Value cannot be None = league_rounds")
 
         return TrainingBuilder.build_dataset_from_scrap(
-            match_results=iteration_result.match_rounds,
+            match_results=match_rounds,
             team_strengths=iteration_result.team_strengths,
             league_rounds=league_rounds,
         )
@@ -53,6 +52,7 @@ class TrainingBuilder:
                 Mapper.map_round_no_by_round_id(league_rounds)
             )
         )
+        round_no_by_round_id = Mapper.map_round_no_by_round_id(league_rounds)
 
         strength_map = TeamStrength.strength_map(team_strengths)
 
@@ -64,11 +64,27 @@ class TrainingBuilder:
                 )
                 continue  # albo: raise, jeśli to ma przerwać cały trening
 
-            home_strength = strength_map.get((result.home_team_id, prev_round_id))
-            away_strength = strength_map.get((result.away_team_id, prev_round_id))
+            league_avg_strength = (
+                TeamStrength.league_average_baseline()
+            )  # dodaj/zaimplementuj w encji, np. 1.0/1.0
+
+            home_strength = TrainingBuilder.get_strength_or_fallback(
+                strength_map,
+                round_no_by_round_id,
+                result.home_team_id,
+                prev_round_id,
+                league_avg_strength=league_avg_strength,
+            )
+            away_strength = TrainingBuilder.get_strength_or_fallback(
+                strength_map,
+                round_no_by_round_id,
+                result.away_team_id,
+                prev_round_id,
+                league_avg_strength=league_avg_strength,
+            )
 
             td = TrainingBuilder.build_single_training_data(
-                match_result=result,
+                match_round=result,
                 home_strength=home_strength,
                 away_strength=away_strength,
                 prev_round_id=prev_round_id,
@@ -79,8 +95,47 @@ class TrainingBuilder:
         return dataset
 
     @staticmethod
+    def get_strength_or_fallback(
+        strength_map: Dict[Tuple[str, str], TeamStrength],
+        round_no_by_round_id: Dict[str, int],
+        team_id: str,
+        prev_round_id: str,
+        *,
+        league_avg_strength: Optional[TeamStrength] = None,
+    ) -> Optional[TeamStrength]:
+        # 1) Exact match
+        exact = strength_map.get((team_id, prev_round_id))
+        if exact is not None:
+            return exact
+
+        # 2) LOCF: last snapshot with round_no < prev_round_no
+        prev_no = round_no_by_round_id.get(prev_round_id)
+        if prev_no is not None:
+            best: Optional[TeamStrength] = None
+            best_no: int = -1
+
+            for (t_id, r_id), ts in strength_map.items():
+                if t_id != team_id:
+                    continue
+                r_no = round_no_by_round_id.get(r_id)
+                if r_no is None:
+                    continue
+                if r_no < prev_no and r_no > best_no:
+                    best_no = r_no
+                    best = ts
+
+            if best is not None:
+                return best
+
+        logger.warning(f'\nLeague-average baseline used ! (TeamStrength) prev_roundId{prev_round_id} - teamId{team_id}\n')
+        # 3) League-average baseline (attack=1, defense=1 etc.)
+        league_avg_strength.team_id = team_id
+        league_avg_strength.round_id = prev_round_id
+        return league_avg_strength
+
+    @staticmethod
     def build_single_training_data(
-        match_result: MatchRound,
+        match_round: MatchRound,
         home_strength: Optional[TeamStrength],
         away_strength: Optional[TeamStrength],
         prev_round_id: str,
@@ -88,13 +143,13 @@ class TrainingBuilder:
 
         if home_strength is None:
             logger.error(
-                f"Missing home_strength teamId={match_result.home_team_id}, matchId={match_result.id}, prev_round_id={prev_round_id}"
+                f"Missing home_strength teamId={match_round.home_team_id}, matchId={match_round.id}, prev_round_id={prev_round_id}"
             )
             return None
 
         if away_strength is None:
             logger.error(
-                f"Missing away_strength teamId={match_result.away_team_id}, matchId={match_result.id}, prev_round_id={prev_round_id}"
+                f"Missing away_strength teamId={match_round.away_team_id}, matchId={match_round.id}, prev_round_id={prev_round_id}"
             )
             return None
 
@@ -115,7 +170,7 @@ class TrainingBuilder:
 
         return TrainingData(
             x_row=X_row,
-            y_home=match_result.home_goals,
-            y_away=match_result.away_goals,
+            y_home=match_round.home_goals,
+            y_away=match_round.away_goals,
             prev_round_id=prev_round_id,
         )
