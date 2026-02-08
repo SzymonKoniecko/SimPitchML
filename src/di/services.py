@@ -1,6 +1,7 @@
 from fastapi import Depends
 from src.adapters.grpc.client.iteration_result import IterationResultClient
 from src.adapters.grpc.client.league_round import LeagueRoundClient
+from src.adapters.grpc.client.match_round import MatchRoundClient
 from src.adapters.grpc.client.simulation_engine import SimulationEngineClient
 from src.adapters.persistence.json_repository import JsonFileRepository
 from src.services.simulation_service import SimulationService
@@ -34,6 +35,14 @@ async def get_league_round_client():
         await client.close()
 
 
+async def get_match_round_client():
+    client = MatchRoundClient()
+    try:
+        yield client
+    finally:
+        await client.close()
+
+
 def get_json_repo():
     return JsonFileRepository()
 
@@ -54,17 +63,22 @@ def get_xgboost_service(context=Depends(get_xgboost_context_service)):
     return XgboostService(context)
 
 
+def get_sportsdata_service(
+    league_round=Depends(get_league_round_client),
+    match_round=Depends(get_match_round_client),
+):
+    return SportsDataService(
+        league_round_client=league_round, match_round_client=match_round
+    )
+
+
 def get_simulation_service(
     engine=Depends(get_sim_engine_client),
     iteration_results=Depends(get_iteration_result_client),
     synchronization=Depends(get_synchronization_service),
-    league_round=Depends(get_league_round_client),
+    sportsdata_service=Depends(get_sportsdata_service),
     xgboost_service=Depends(get_xgboost_service),
 ):
     return SimulationService(
-        engine, iteration_results, synchronization, league_round, xgboost_service
+        engine, iteration_results, synchronization, sportsdata_service, xgboost_service
     )
-
-
-def get_sportsdata_service(league_round=Depends(get_league_round_client)):
-    return SportsDataService(league_round_client=league_round)

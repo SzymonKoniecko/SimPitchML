@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from src.core import get_logger
 from src.di.ports.adapters.league_round_port import LeagueRoundPort
+from src.di.ports.sportsdata_service_port import SportsDataServicePort
 from src.di.ports.xgboost.xgboost_service_port import XgboostServicePort
 from src.domain.entities import (
     IterationResult,
@@ -28,30 +29,32 @@ class SimulationService:
         simulation_engine: SimulationEnginePort,
         iteration_results: IterationResultPort,
         synchronization: SynchronizationPort,
-        league_rounds: LeagueRoundPort,
-        xgboost_service: XgboostServicePort
+        sportsdata_service: SportsDataServicePort,
+        xgboost_service: XgboostServicePort,
     ):
         self._simulation_engine = simulation_engine
         self._iteration_results = iteration_results
         self._synchronization = synchronization
-        self._league_rounds = league_rounds
+        self._sportsdata_service = sportsdata_service
         self._xgboost_service = xgboost_service
 
     async def run_prediction(self, predict_request: PredictRequest):
         full_training_dataset = await self.init_prediction(
             predict_request=predict_request
         )
-        return await self._xgboost_service.train_evaluate_and_save(predict_request, full_training_dataset)
-
-    async def init_prediction(
-        self, predict_request: PredictRequest
-    ) -> TrainingDataset:
-
-        list_simulation_ids = await self.get_pending_simulations_to_sync()
-        rounds = await self._league_rounds.get_league_rounds_by_params(
-            req_league_id=predict_request.league_id
+        return await self._xgboost_service.train_evaluate_and_save(
+            predict_request, full_training_dataset
         )
 
+    async def init_prediction(self, predict_request: PredictRequest) -> TrainingDataset:
+
+        list_simulation_ids = await self.get_pending_simulations_to_sync()
+        rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
+            req_league_id=predict_request.league_id
+        )
+        all_match_rounds = (
+            await self._sportsdata_service.get_match_rounds_by_league_rounds(rounds)
+        )
         # list_iteration_results = []
         list_training_data_dataset = []
 
@@ -64,6 +67,10 @@ class SimulationService:
                     tmp_dataset = TrainingBuilder.build_dataset(
                         iteration_result=it_result,
                         league_rounds=rounds,
+                        match_rounds=await self._sportsdata_service.concat_match_rounds_by_simulated_match_rounds(
+                            all_match_rounds=all_match_rounds,
+                            simulated_match_rounds=it_result.simulated_match_rounds,
+                        ),
                     )
                     list_training_data_dataset.extend(  # stays in the single list
                         tmp_dataset

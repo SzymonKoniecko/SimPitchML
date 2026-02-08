@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Tuple
 from src.domain.entities import (
     IterationResult,
     LeagueRound,
-    MatchResult,
+    MatchRound,
     TeamStrength,
     TrainingData,
 )
@@ -16,13 +16,15 @@ GUID_EMPTY = "00000000-0000-0000-0000-000000000000"
 class TrainingBuilder:
     @staticmethod
     def build_dataset(
-        iteration_result: IterationResult, league_rounds: List[LeagueRound]
+        iteration_result: IterationResult,
+        league_rounds: List[LeagueRound],
+        match_rounds: List[MatchRound], # simulated_match_rounds but with the played matched BEFORE simulation
     ) -> List[TrainingData]:
         if (
-            iteration_result.simulated_match_rounds is None
-            or len(iteration_result.simulated_match_rounds) == 0
+            iteration_result.match_rounds is None
+            or len(iteration_result.match_rounds) == 0
         ):
-            raise ValueError("Value cannot be None = simulated_match_rounds")
+            raise ValueError("Value cannot be None = match_rounds")
         if (
             iteration_result.team_strengths is None
             or len(iteration_result.team_strengths) == 0
@@ -30,20 +32,20 @@ class TrainingBuilder:
             raise ValueError("Value cannot be None = team_strengths")
         if league_rounds is None or len(league_rounds) == 0:
             raise ValueError("Value cannot be None = league_rounds")
-        
+
         return TrainingBuilder.build_dataset_from_scrap(
-            match_results=iteration_result.simulated_match_rounds,
+            match_results=iteration_result.match_rounds,
             team_strengths=iteration_result.team_strengths,
             league_rounds=league_rounds,
         )
 
     @staticmethod
     def build_dataset_from_scrap(
-        match_results: List[MatchResult],
+        match_results: List[MatchRound],
         team_strengths: List[TeamStrength],
         league_rounds: List[LeagueRound],
     ) -> List[TrainingData]:
-        
+
         dataset: List[TrainingData] = []
         # Map: round_id -> prev_round_id (z uwzględnieniem Guid.Empty w Mapperze, jeśli to tam robisz)
         prev_round_id_by_round_id: Dict[str, str] = (
@@ -78,7 +80,7 @@ class TrainingBuilder:
 
     @staticmethod
     def build_single_training_data(
-        match_result: MatchResult,
+        match_result: MatchRound,
         home_strength: Optional[TeamStrength],
         away_strength: Optional[TeamStrength],
         prev_round_id: str,

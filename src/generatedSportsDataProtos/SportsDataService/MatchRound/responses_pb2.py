@@ -12,7 +12,7 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
-from SportsDataService import commonTypes_pb2 as SportsDataService_dot_commonTypes__pb2
+from src.generatedSportsDataProtos.SportsDataService import commonTypes_pb2 as SportsDataService_dot_commonTypes__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n,SportsDataService/MatchRound/responses.proto\x12+SimPitchProtos.SportsDataService.MatchRound\x1a#SportsDataService/commonTypes.proto\"f\n\x1cMatchRoundsByRoundIdResponse\x12\x46\n\x0cmatch_rounds\x18\x01 \x03(\x0b\x32\x30.SimPitchProtos.SportsDataService.MatchRoundGrpcB.\xaa\x02+SimPitchProtos.SportsDataService.MatchRoundb\x06proto3')

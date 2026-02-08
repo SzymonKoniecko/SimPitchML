@@ -2,8 +2,8 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from SportsDataService.MatchRound import requests_pb2 as SportsDataService_dot_MatchRound_dot_requests__pb2
-from SportsDataService.MatchRound import responses_pb2 as SportsDataService_dot_MatchRound_dot_responses__pb2
+from src.generatedSportsDataProtos.SportsDataService.MatchRound import requests_pb2 as SportsDataService_dot_MatchRound_dot_requests__pb2
+from src.generatedSportsDataProtos.SportsDataService.MatchRound import responses_pb2 as SportsDataService_dot_MatchRound_dot_responses__pb2
 
 
 class MatchRoundServiceStub(object):
