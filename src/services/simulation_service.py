@@ -75,13 +75,17 @@ class SimulationService:
                     list_training_data_dataset.extend(  # stays in the single list
                         tmp_dataset
                     )
-
-        return TrainingSplit.define_train_split(
+        training_splitted_dataset = TrainingSplit.define_train_split(
             dataset=list_training_data_dataset,
             round_no_by_round_id=Mapper.map_round_no_by_round_id(rounds),
             train_until_round_no=predict_request.train_until_round_no,
             train_ratio=predict_request.train_ratio,
         )
+        if list_simulation_ids is not None and len(list_simulation_ids) > 0:
+            train_result = self._xgboost_service.train_evaluate_and_save()
+            return train_result  # tmp return when predict is not developed
+
+        return training_splitted_dataset[0] # tmp return when predict is not developed
 
     async def run_all_overview_scenario(self):
         items = []

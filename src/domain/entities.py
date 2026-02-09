@@ -5,6 +5,7 @@ from typing import Any, Dict, Generic, Iterable, Optional, Tuple, TypeVar, List,
 import json
 
 import pandas as pd
+from xgboost import XGBRegressor
 
 T = TypeVar("T")
 
@@ -230,6 +231,13 @@ class TrainingDataset:
 @dataclass(frozen=True)
 class PredictRequest():
     league_id: str
+    seed: int
     train_until_round_no: int
     train_ratio: float = 0.8
     ...
+
+@dataclass(frozen=True)
+class TrainedModels:
+    home: XGBRegressor
+    away: XGBRegressor
+    feature_schema: list[str]
