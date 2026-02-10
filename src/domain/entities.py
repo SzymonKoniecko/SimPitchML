@@ -288,6 +288,7 @@ class TrainingData:
 class PredictRequest:
     simulation_id: str
     league_id: str
+    interation_number: int
     team_strengths: List[TeamStrength]
     matches_to_simulate: List[MatchRound]
     train_until_round_no: int

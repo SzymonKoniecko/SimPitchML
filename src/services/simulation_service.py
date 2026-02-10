@@ -41,40 +41,53 @@ class SimulationService:
         self._sportsdata_service = sportsdata_service
         self._xgboost_service = xgboost_service
 
-    async def run_prediction(self, predict_request: PredictRequest) -> IterationResult:
+    async def run_prediction(
+        self, predict_request: PredictRequest
+    ) -> List[IterationResult]:
 
         models: TrainedModels = None
         rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
             league_id=predict_request.league_id
         )
         prev_round_id_by_round_id: Dict[str, str] = (
-                    Mapper.map_prev_round_id_by_round_id(
-                        Mapper.map_round_no_by_round_id(rounds)
-                    )
-                )
-        
+            Mapper.map_prev_round_id_by_round_id(
+                Mapper.map_round_no_by_round_id(rounds)
+            )
+        )
+
         init_prediction = await self.init_prediction(
             predict_request, rounds, prev_round_id_by_round_id
         )
 
-
-        if init_prediction.list_simulation_ids is not None and len(init_prediction.list_simulation_ids) > 0:
+        if (
+            init_prediction.list_simulation_ids is not None
+            and len(init_prediction.list_simulation_ids) > 0
+        ):
             models = self._xgboost_service.train_evaluate_and_save(
-                predictRequest=predict_request, t_dataset=init_prediction.training_dataset
+                predictRequest=predict_request,
+                t_dataset=init_prediction.training_dataset,
             )
         else:
             models = self._xgboost_service.get_evaluated_models()
 
-        return await self._xgboost_service.predict_results(
-            predict_request, init_prediction, models
-        )
+        iteration_result_list = []
+        for iteration in range(1, predict_request.interation_number + 1):
+            iteration_result_list.append(
+                await self._xgboost_service.predict_results(
+                    predict_request, init_prediction, iteration, models
+                )
+            )
+        return iteration_result_list
 
     async def init_prediction(
-        self, predict_request: PredictRequest, rounds: List[LeagueRound], prev_round_id_by_round_id: Dict[str, str]
+        self,
+        predict_request: PredictRequest,
+        rounds: List[LeagueRound],
+        prev_round_id_by_round_id: Dict[str, str],
     ) -> InitPrediction:
 
         list_simulation_ids = await self.get_pending_simulations_to_sync()
-        
+
         all_match_rounds = (
             await self._sportsdata_service.get_match_rounds_by_league_rounds(rounds)
         )
@@ -94,7 +107,7 @@ class SimulationService:
                             all_match_rounds=all_match_rounds,
                             simulated_match_rounds=it_result.simulated_match_rounds,
                         ),
-                        prev_round_id_by_round_id=prev_round_id_by_round_id
+                        prev_round_id_by_round_id=prev_round_id_by_round_id,
                     )
                     list_training_data_dataset.extend(  # stays in the single list
                         tmp_dataset
@@ -107,7 +120,12 @@ class SimulationService:
             train_ratio=predict_request.train_ratio,
         )
 
-        return InitPrediction(training_splitted_dataset, list_simulation_ids, prev_round_id_by_round_id, round_no_by_round_id)
+        return InitPrediction(
+            training_splitted_dataset,
+            list_simulation_ids,
+            prev_round_id_by_round_id,
+            round_no_by_round_id,
+        )
 
     async def run_all_overview_scenario(self):
         items = []

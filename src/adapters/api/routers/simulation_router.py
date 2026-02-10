@@ -16,7 +16,7 @@ async def post_simulation(
     
     result = await service.run_prediction(body)
     
-    return {"iterationResult": result}
+    return {"iterationResults": result}
 
 @router.get("/simulations/overviews/all")
 async def get_simulation_overview(
