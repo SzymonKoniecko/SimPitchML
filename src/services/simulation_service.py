@@ -44,7 +44,6 @@ class SimulationService:
     async def run_prediction(
         self, predict_request: PredictRequest
     ) -> int:
-
         models: TrainedModels = None
         rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
             league_id=predict_request.league_id
@@ -93,7 +92,6 @@ class SimulationService:
         all_match_rounds = (
             await self._sportsdata_service.get_match_rounds_by_league_rounds(rounds)
         )
-        # list_iteration_results = []
         list_training_data_dataset = []
 
         if list_simulation_ids is not None and len(list_simulation_ids) != 0:

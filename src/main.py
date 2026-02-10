@@ -13,12 +13,11 @@ from src.core.logger import get_logger
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
 from src.di.services import get_predict_grpc_servicer
-from src.generatedSimPitchMlProtos.SimPitchMl.Predict import service_pb2_grpc
 from grpc_reflection.v1alpha import reflection
 
 # Twoje generated proto
 try:
-    from src.generatedSimPitchMlProtos.SimPitchMl.Predict import requests_pb2, responses_pb2, service_pb2_grpc
+    from src.generatedSimPitchMlProtos.SimPitchMl.Predict import requests_pb2, responses_pb2, service_pb2_grpc, service_pb2
     from src.generatedSimPitchMlProtos.SimPitchMl import commonTypes_pb2
 except ImportError:
     print("gRPC proto missing. Run: make proto-simpitch")
@@ -45,7 +44,7 @@ async def lifespan(app: FastAPI):
     server.add_insecure_port(f"[::]:{GRPC_PORT}")
 
     SERVICE_NAMES = (
-        service_pb2_grpc.DESCRIPTOR.services_by_name["PredictService"].full_name,
+        service_pb2.DESCRIPTOR.services_by_name["PredictService"].full_name,
         reflection.SERVICE_NAME,
     )
     reflection.enable_server_reflection(SERVICE_NAMES, server)  # reflection pattern [web:130]
