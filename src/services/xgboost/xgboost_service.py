@@ -11,6 +11,7 @@ from src.domain.entities import (
     IterationResult,
     MatchRound,
     PredictRequest,
+    StrengthItem,
     TeamStrength,
     TrainedModels,
     TrainingDataset,
@@ -161,30 +162,67 @@ class XgboostService:
         return iteration_result
 
     async def predict_single_result(
-        self,
         match_round: MatchRound,
         home_strength: Optional[TeamStrength],
         away_strength: Optional[TeamStrength],
         prev_round_id: str,
         models: TrainedModels,
-    ) -> Tuple[MatchRound, TeamStrength]:
+    ) -> Tuple[MatchRound, Tuple[TeamStrength, TeamStrength]]:
+        """
+        Predykuje wynik pojedynczego MatchRound i zwraca wypełniony obiekt + nowe TeamStrength.
         
-        predictData = TrainingBuilder.build_single_training_data(match_round, home_strength, away_strength, prev_round_id)
-        x_predict = Mapper.map_to_x_matrix(predictData.x_row, models.feature_schema)
+        Args:
+            match_round: Pusty MatchRound (is_played=False).
+            models: Wytrenowane modele + schema.
+            prev_round_id: Snapshot TeamStrength PRZED tym meczem.
+            league_avg_strength: Fallback TeamStrength (jeśli brak danych o drużynie).
+        
+        Returns:
+            (wypełniony MatchRound, (home_strength_updated, away_strength_updated))
+        """
+        
+        x_row = TrainingBuilder.build_single_training_data(
+            match_round=match_round,
+            home_strength=home_strength,
+            away_strength=away_strength,
+            prev_round_id=prev_round_id,
+        )
 
-        pred_home_goals = models.home.predict(x_predict)
-        pred_away_goals = models.away.predict(x_predict)
+        x_predict = Mapper.map_to_x_matrix([x_row], models.feature_schema)
 
-        # post-process(clamp):
+        pred_home_goals = models.home.predict(x_predict)[0]  # float
+        pred_away_goals = models.away.predict(x_predict)[0]  # float
 
+        # Post-process (clamp + round)
         MAX_GOALS = 15
-        pred_home_goals = max(0.0, pred_home_goals)
-        pred_away_goals = max(0.0, pred_away_goals)
-        pred_home_goals = min(MAX_GOALS, pred_home_goals)
-        pred_away_goals = min(MAX_GOALS, pred_away_goals)
+        pred_home_goals = max(0.0, min(float(MAX_GOALS), pred_home_goals))
+        pred_away_goals = max(0.0, min(float(MAX_GOALS), pred_away_goals))
 
-        match_round.home_goals = int(round(pred_home_goals))
-        match_round.away_goals = int(round(pred_away_goals))
-        match_round.is_draw = (match_round.home_goals == match_round.away_goals)
-        match_round.is_played = True 
-        
+        home_goals = int(round(pred_home_goals))
+        away_goals = int(round(pred_away_goals))
+
+        match_round.home_goals = home_goals
+        match_round.away_goals = away_goals
+        match_round.is_draw = home_goals == away_goals
+        match_round.is_played = True
+
+        # TeamStrength (aktualizacja po meczu)
+        team_strength_home = TeamStrength(
+            team_id=match_round.home_team_id,
+            likelihood=StrengthItem(offensive=pred_home_goals, defensive=pred_away_goals),  # form
+            posterior=StrengthItem(offensive=pred_home_goals, defensive=pred_away_goals),  # long-term form
+            expected_goals=str(pred_home_goals),
+            last_update="2026-02-10",  # current timestamp
+            round_id=match_round.round_id,  # stan PO tym meczu
+        )
+
+        team_strength_away = TeamStrength(
+            team_id=match_round.away_team_id,
+            likelihood=StrengthItem(offensive=pred_away_goals, defensive=pred_home_goals),
+            posterior=StrengthItem(offensive=pred_away_goals, defensive=pred_home_goals),
+            expected_goals=str(pred_away_goals),
+            last_update="2026-02-10",
+            round_id=match_round.round_id,
+        )
+
+        return match_round, (team_strength_home, team_strength_away)

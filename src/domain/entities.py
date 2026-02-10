@@ -288,11 +288,12 @@ class TrainingData:
 class PredictRequest:
     simulation_id: str
     league_id: str
-    league_avg_strength: float
-    seed: Optional[int] = None
     team_strengths: List[TeamStrength]
     matches_to_simulate: List[MatchRound]
     train_until_round_no: int
+    
+    league_avg_strength: float
+    seed: Optional[int] = None
     train_ratio: float = 0.8
 
 
