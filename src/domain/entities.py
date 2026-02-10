@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Any, Dict, Generic, Iterable, Optional, Tuple, TypeVar, List, Union
 import json
+
 
 import pandas as pd
 from xgboost import XGBRegressor
@@ -31,6 +32,19 @@ class IterationResult:
     execution_time: str
     team_strengths: List[TeamStrength]
     simulated_match_rounds: List[MatchRound]
+    created_by: str
+
+    @staticmethod
+    def team_strengths_to_json_value(team_strengths: List[TeamStrength]) -> str:
+        """Convert List[TeamStrength] to JSON string."""
+        # asdict rekurencyjnie konwertuje nested dataclasses na dict
+        dict_list = [asdict(ts) for ts in team_strengths]
+        return json.dumps(dict_list, indent=2) 
+    @staticmethod
+    def simulated_match_rounds_to_json_value(match_rounds: List[MatchRound]) -> str:
+        """Convert List[MatchRound] to JSON string."""
+        dict_list = [asdict(mr) for mr in match_rounds]
+        return json.dumps(dict_list, indent=2) 
 
     @staticmethod
     def from_team_strength_raw(data: Union[str, List[Dict]]) -> List[TeamStrength]:
@@ -288,7 +302,7 @@ class TrainingData:
 class PredictRequest:
     simulation_id: str
     league_id: str
-    interation_number: int
+    iteration_count: int
     team_strengths: List[TeamStrength]
     matches_to_simulate: List[MatchRound]
     train_until_round_no: int

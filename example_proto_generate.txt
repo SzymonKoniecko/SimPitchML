@@ -16,14 +16,14 @@ python3 -m grpc_tools.protoc \
 # ponizej najlepsze - 
 
 
-mkdir -p ./src/generatedSportsDataProtos    
+mkdir -p ./src/generatedSimPitchMlProtos    
 python3 -m grpc_tools.protoc -Iproto \
-  --python_out=./src/generatedSportsDataProtos \
-  --grpc_python_out=./src/generatedSportsDataProtos \
-  proto/SportsDataService/MatchRound/service.proto \
-  proto/SportsDataService/MatchRound/requests.proto \
-  proto/SportsDataService/MatchRound/responses.proto \
-  proto/SportsDataService/commonTypes.proto
+  --python_out=./src/generatedSimPitchMlProtos \
+  --grpc_python_out=./src/generatedSimPitchMlProtos \
+  proto/SimPitchMl/Predict/service.proto \
+  proto/SimPitchMl/Predict/requests.proto \
+  proto/SimPitchMl/Predict/responses.proto \
+  proto/SimPitchMl/commonTypes.proto
 
 
 find ./src/generated/simulation -type d -not -path "*/__pycache__*" -exec touch {}/__init__.py \;

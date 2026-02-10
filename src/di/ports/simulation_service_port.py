@@ -13,7 +13,7 @@ from src.domain.entities import (
 class SimulationServicePort(Protocol):
     async def run_prediction(
         self, predict_request: PredictRequest
-    ) -> List[IterationResult]: ...
+    ) -> int: ...
     async def init_prediction(
         self,
         predict_request: PredictRequest,

@@ -43,7 +43,7 @@ class SimulationService:
 
     async def run_prediction(
         self, predict_request: PredictRequest
-    ) -> List[IterationResult]:
+    ) -> int:
 
         models: TrainedModels = None
         rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
@@ -70,14 +70,16 @@ class SimulationService:
         else:
             models = self._xgboost_service.get_evaluated_models()
 
-        iteration_result_list = []
-        for iteration in range(1, predict_request.interation_number + 1):
-            iteration_result_list.append(
-                await self._xgboost_service.predict_results(
-                    predict_request, init_prediction, iteration, models
-                )
+        iteration_result_counter = 0
+        for iteration in range(0, predict_request.iteration_count):
+            iteration_result = await self._xgboost_service.predict_results(
+                predict_request, init_prediction, iteration, models
             )
-        return iteration_result_list
+            iteration_result_counter = iteration_result_counter + 1
+            await self._iteration_results.send_iteration_result(iteration_result=iteration_result)
+
+
+        return iteration_result_counter
 
     async def init_prediction(
         self,

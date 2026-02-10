@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 from src.generatedSimulationProtos.SimulationService import commonTypes_pb2 as SimulationService_dot_commonTypes__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n0SimulationService/IterationResult/requests.proto\x12\x30SimPitchProtos.SimulationService.IterationResult\x1a#SimulationService/commonTypes.proto\"(\n\x1aIterationResultByIdRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x89\x01\n%IterationResultsBySimulationIdRequest\x12\x15\n\rsimulation_id\x18\x01 \x01(\t\x12I\n\rpaged_request\x18\x02 \x01(\x0b\x32\x32.SimPitchProtos.SimulationService.PagedRequestGrpcB3\xaa\x02\x30SimPitchProtos.SimulationService.IterationResultb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n0SimulationService/IterationResult/requests.proto\x12\x30SimPitchProtos.SimulationService.IterationResult\x1a#SimulationService/commonTypes.proto\"(\n\x1aIterationResultByIdRequest\x12\n\n\x02id\x18\x01 \x01(\t\"\x89\x01\n%IterationResultsBySimulationIdRequest\x12\x15\n\rsimulation_id\x18\x01 \x01(\t\x12I\n\rpaged_request\x18\x02 \x01(\x0b\x32\x32.SimPitchProtos.SimulationService.PagedRequestGrpc\"r\n\x1aSaveIterationResultRequest\x12T\n\x15iteration_result_grpc\x18\x01 \x01(\x0b\x32\x35.SimPitchProtos.SimulationService.IterationResultGrpcB3\xaa\x02\x30SimPitchProtos.SimulationService.IterationResultb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -27,4 +27,6 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_ITERATIONRESULTBYIDREQUEST']._serialized_end=179
   _globals['_ITERATIONRESULTSBYSIMULATIONIDREQUEST']._serialized_start=182
   _globals['_ITERATIONRESULTSBYSIMULATIONIDREQUEST']._serialized_end=319
+  _globals['_SAVEITERATIONRESULTREQUEST']._serialized_start=321
+  _globals['_SAVEITERATIONRESULTREQUEST']._serialized_end=435
 # @@protoc_insertion_point(module_scope)
