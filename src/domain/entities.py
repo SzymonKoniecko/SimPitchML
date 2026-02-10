@@ -22,7 +22,7 @@ class SimulationOverview:
     prior_league_strength: float
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class IterationResult:
     id: str
     simulation_id: str
@@ -100,7 +100,7 @@ class IterationResult:
         return json.dumps(data_dict, indent=4, default=str)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class MatchRound:
     id: str
     round_id: str
@@ -142,6 +142,66 @@ class TeamStrength:
     ) -> Dict[Tuple[str, str], "TeamStrength"]:
         return {(ts.team_id, ts.round_id): ts for ts in items}
     
+    @staticmethod
+    def add_to_strength_map(
+        strength_map: Dict[Tuple[str, str], "TeamStrength"],
+        ts: "TeamStrength",
+    ) -> Dict[Tuple[str, str], "TeamStrength"]:
+        """
+        Dodaje nowy TeamStrength do istniejącej mapy (strength_map).
+        
+        - Jeśli klucz (team_id, round_id) już istnieje → **nadpisuje** (nowsze dane).
+        - Zwraca nową mapę (nie mutuje oryginalnej).
+        
+        Przykład:
+            map = TeamStrength.strength_map([ts1])
+            new_map = TeamStrength.add_to_strength_map(map, ts2)
+        
+        Użycia:
+        - Incremental update mapy przy synchronizacji nowych IterationResult.
+        - Ładowanie nowych TeamStrength z gRPC i dołączanie do istniejącej mapy.
+        """
+        key = (ts.team_id, ts.round_id)
+        new_map = dict(strength_map)  # shallow copy (bezpieczne)
+        new_map[key] = ts
+        return new_map
+
+    @classmethod
+    def merge_strength_maps(
+        cls,
+        *maps: Dict[Tuple[str, str], "TeamStrength"],
+    ) -> Dict[Tuple[str, str], "TeamStrength"]:
+        """
+        Łączy wiele map (np. z różnych IterationResult).
+        
+        - Ostatnia mapa ma najwyższy priorytet (nadpisuje wcześniejsze).
+        - Zwraca nową mapę.
+        
+        Przykład:
+            map1 = strength_map_from_iter1
+            map2 = strength_map_from_iter2
+            combined = TeamStrength.merge_strength_maps(map1, map2)
+        """
+        combined = {}
+        for strength_map in maps:
+            combined.update(strength_map)  # update nadpisuje duplikaty
+        return combined
+    
+    @staticmethod
+    def strength_map_to_list(
+        strength_map: Dict[Tuple[str, str], "TeamStrength"]
+    ) -> List["TeamStrength"]:
+        """
+        Konwertuje mapę (dict) z powrotem na listę TeamStrength.
+        
+        Zwraca **te same obiekty** (shallow), ale w **nieokreślonej kolejności** (dict order).
+        
+        Przykład:
+            mapa = strength_map_from_iteration
+            lista = TeamStrength.strength_map_to_list(mapa)
+        """
+        return list(strength_map.values())
+
     @staticmethod
     def league_average_baseline(
         *,
@@ -223,21 +283,35 @@ class TrainingData:
       bez mieszania przyszłości z przeszłością.
     """
 
-@dataclass(frozen=True)
-class TrainingDataset:
-    train: List[TrainingData]
-    test: List[TrainingData]
 
 @dataclass(frozen=True)
-class PredictRequest():
+class PredictRequest:
+    simulation_id: str
     league_id: str
-    seed: int
+    league_avg_strength: float
+    seed: Optional[int] = None
+    team_strengths: List[TeamStrength]
+    matches_to_simulate: List[MatchRound]
     train_until_round_no: int
     train_ratio: float = 0.8
-    ...
+
 
 @dataclass(frozen=True)
 class TrainedModels:
     home: XGBRegressor
     away: XGBRegressor
     feature_schema: list[str]
+
+
+@dataclass(frozen=True)
+class TrainingDataset:
+    train: List[TrainingData]
+    test: List[TrainingData]
+
+
+@dataclass(frozen=True)
+class InitPrediction:
+    training_dataset: TrainingDataset
+    list_simulation_ids = List[str]
+    prev_round_id_by_round_id: Dict[str, str]
+    round_no_by_round_id: Dict[str, int]

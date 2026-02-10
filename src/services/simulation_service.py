@@ -6,10 +6,13 @@ from src.di.ports.adapters.league_round_port import LeagueRoundPort
 from src.di.ports.sportsdata_service_port import SportsDataServicePort
 from src.di.ports.xgboost.xgboost_service_port import XgboostServicePort
 from src.domain.entities import (
+    InitPrediction,
     IterationResult,
+    LeagueRound,
     PagedResponse,
     PredictRequest,
     Synchronization,
+    TrainedModels,
     TrainingData,
     TrainingDataset,
 )
@@ -38,20 +41,40 @@ class SimulationService:
         self._sportsdata_service = sportsdata_service
         self._xgboost_service = xgboost_service
 
-    async def run_prediction(self, predict_request: PredictRequest):
-        full_training_dataset = await self.init_prediction(
-            predict_request=predict_request
-        )
-        return await self._xgboost_service.train_evaluate_and_save(
-            predict_request, full_training_dataset
-        )
+    async def run_prediction(self, predict_request: PredictRequest) -> IterationResult:
 
-    async def init_prediction(self, predict_request: PredictRequest) -> TrainingDataset:
-
-        list_simulation_ids = await self.get_pending_simulations_to_sync()
+        models: TrainedModels = None
         rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
             league_id=predict_request.league_id
         )
+        prev_round_id_by_round_id: Dict[str, str] = (
+                    Mapper.map_prev_round_id_by_round_id(
+                        Mapper.map_round_no_by_round_id(rounds)
+                    )
+                )
+        
+        init_prediction = await self.init_prediction(
+            predict_request, rounds, prev_round_id_by_round_id
+        )
+
+
+        if init_prediction.list_simulation_ids is not None and len(init_prediction.list_simulation_ids) > 0:
+            models = self._xgboost_service.train_evaluate_and_save(
+                predictRequest=predict_request, t_dataset=init_prediction.training_dataset
+            )
+        else:
+            models = self._xgboost_service.get_evaluated_models()
+
+        return await self._xgboost_service.predict_results(
+            predict_request, init_prediction, models
+        )
+
+    async def init_prediction(
+        self, predict_request: PredictRequest, rounds: List[LeagueRound], prev_round_id_by_round_id: Dict[str, str]
+    ) -> InitPrediction:
+
+        list_simulation_ids = await self.get_pending_simulations_to_sync()
+        
         all_match_rounds = (
             await self._sportsdata_service.get_match_rounds_by_league_rounds(rounds)
         )
@@ -71,21 +94,20 @@ class SimulationService:
                             all_match_rounds=all_match_rounds,
                             simulated_match_rounds=it_result.simulated_match_rounds,
                         ),
+                        prev_round_id_by_round_id=prev_round_id_by_round_id
                     )
                     list_training_data_dataset.extend(  # stays in the single list
                         tmp_dataset
                     )
+        round_no_by_round_id = Mapper.map_round_no_by_round_id(rounds)
         training_splitted_dataset = TrainingSplit.define_train_split(
             dataset=list_training_data_dataset,
-            round_no_by_round_id=Mapper.map_round_no_by_round_id(rounds),
+            round_no_by_round_id=round_no_by_round_id,
             train_until_round_no=predict_request.train_until_round_no,
             train_ratio=predict_request.train_ratio,
         )
-        if list_simulation_ids is not None and len(list_simulation_ids) > 0:
-            train_result = self._xgboost_service.train_evaluate_and_save()
-            return train_result  # tmp return when predict is not developed
 
-        return training_splitted_dataset[0] # tmp return when predict is not developed
+        return InitPrediction(training_splitted_dataset, list_simulation_ids, prev_round_id_by_round_id, round_no_by_round_id)
 
     async def run_all_overview_scenario(self):
         items = []

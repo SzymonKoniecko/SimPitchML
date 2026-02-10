@@ -7,6 +7,7 @@ import xgboost as xgb
 
 from src.core import get_logger
 from src.di.ports.adapters.json_file_repository_port import JsonFileRepositoryPort
+from src.domain.features.trainings.training_builder import TrainingBuilder
 
 
 logger = get_logger(__name__)
@@ -47,7 +48,7 @@ class XgBoostContextService:
     ) -> None:
         payload: Dict[str, Any] = {
             "league_id": league_id,
-            "feature_schema": feature_schema,
+            "feature_schema": TrainingBuilder.feature_schema(),
             "last_overview_created_date": last_overview_created_date,
         }
         self.repo.save(filename=self._meta_filename(league_id=league_id), data=payload)

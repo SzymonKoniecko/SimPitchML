@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 
 from src.domain.entities import LeagueRound, TrainingData
@@ -44,8 +44,7 @@ class Mapper:
 
         - Jeśli feature_schema jest None: bierze kolumny z DataFrame i zwraca je jako schema.
         - Jeśli feature_schema jest podane: dopasowuje DataFrame do tej listy kolumn
-        (brakujące kolumny uzupełnia fill_value, nadmiarowe usuwa). [web:187]
-
+        (brakujące kolumny uzupełnia fill_value, nadmiarowe usuwa).
         Zwracane schema zawsze odpowiada kolumnom w X (kolejność ma znaczenie przy predict).
         """
         if not dataset:
@@ -53,16 +52,16 @@ class Mapper:
             return empty_X, pd.Series(dtype=int), pd.Series(dtype=int), (feature_schema or [])
 
         rows = [item.x_row for item in dataset]
-        X = pd.DataFrame(rows)  # list-of-dicts -> DataFrame [web:182]
+        X = pd.DataFrame(rows)  # list-of-dicts -> DataFrame
 
         if feature_schema is None:
             feature_schema = list(X.columns)
 
-        # Wymuszamy identyczne kolumny i kolejność (ważne dla train/predict) [web:187]
-        X = X.reindex(columns=feature_schema, fill_value=fill_value)  # [web:187]
+        # Wymuszamy identyczne kolumny i kolejność (ważne dla train/predict)
+        X = X.reindex(columns=feature_schema, fill_value=fill_value)
 
-        y_home = pd.Series([item.y_home for item in dataset], dtype=int)  # [web:186]
-        y_away = pd.Series([item.y_away for item in dataset], dtype=int)  # [web:186]
+        y_home = pd.Series([item.y_home for item in dataset], dtype=int)
+        y_away = pd.Series([item.y_away for item in dataset], dtype=int)
 
         return X, y_home, y_away, feature_schema
 
@@ -75,3 +74,13 @@ class Mapper:
         if not dataset:
             return []
         return list(pd.DataFrame([d.x_row for d in dataset]).columns) 
+    
+    @staticmethod
+    def map_to_x_matrix(
+        x_rows: List[dict[str, Any]],
+        feature_schema: List[str],
+        fill_value: float = 0.0,
+    ) -> pd.DataFrame:
+        X = pd.DataFrame(x_rows)
+        # wymuś kolumny i kolejność (braki uzupełnij)
+        return X.reindex(columns=feature_schema, fill_value=fill_value)

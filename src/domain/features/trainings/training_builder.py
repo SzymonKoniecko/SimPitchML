@@ -14,6 +14,42 @@ GUID_EMPTY = "00000000-0000-0000-0000-000000000000"
 
 
 class TrainingBuilder:
+
+    @staticmethod
+    def feature_schema() -> List[str]:
+        """
+        **Zwraca standardowy schemat cech (nazwy kolumn i kolejność) dla wszystkich X w projekcie.**
+        
+        To jest **stały kontrakt** między treningiem a predykcją: X_train i X_predict muszą mieć identyczne kolumny i kolejność.
+        
+        Zwraca zawsze tę samą listę (nie zależy od danych):
+        ['home_p_off', 'home_p_def', 'home_l_off', 'home_l_def', 
+         'away_p_off', 'away_p_def', 'away_l_off', 'away_l_def',
+         'diff_post_off', 'diff_post_def']
+        
+        Użycia:
+        - W treningu: TrainingData.to_xy(..., feature_schema=TrainingData.feature_schema())
+        - W predykcji: X_predict = Mapper.map_to_x_matrix(x_rows, TrainingData.feature_schema())
+        - Zapis do metadanych: context.save(..., feature_schema=TrainingData.feature_schema())
+        """
+        return [
+            # Gospodarz
+            "home_p_off",    # home posterior offensive (długoterminowy atak)
+            "home_p_def",    # home posterior defensive
+            "home_l_off",    # home likelihood offensive (forma ataku)
+            "home_l_def",    # home likelihood defensive
+            
+            # Gość
+            "away_p_off",    # away posterior offensive
+            "away_p_def",    # away posterior defensive
+            "away_l_off",    # away likelihood offensive
+            "away_l_def",    # away likelihood defensive
+            
+            # Różnice (derived)
+            "diff_post_off", # home_p_off - away_p_def (przewaga ataku gospodarza)
+            "diff_post_def", # home_p_def - away_p_off (przewaga obrony gospodarza)
+        ]
+    
     @staticmethod
     def build_dataset(
         iteration_result: IterationResult,
@@ -21,6 +57,7 @@ class TrainingBuilder:
         match_rounds: List[
             MatchRound
         ],  # simulated_match_rounds but with the played matched BEFORE simulation
+        prev_round_id_by_round_id: Dict[str, str]
     ) -> List[TrainingData]:
         if match_rounds is None or len(match_rounds) == 0:
             raise ValueError("Value cannot be None = match_rounds")
@@ -36,6 +73,7 @@ class TrainingBuilder:
             match_results=match_rounds,
             team_strengths=iteration_result.team_strengths,
             league_rounds=league_rounds,
+            prev_round_id_by_round_id=prev_round_id_by_round_id
         )
 
     @staticmethod
@@ -43,15 +81,11 @@ class TrainingBuilder:
         match_results: List[MatchRound],
         team_strengths: List[TeamStrength],
         league_rounds: List[LeagueRound],
+        prev_round_id_by_round_id: Dict[str, str]
     ) -> List[TrainingData]:
 
         dataset: List[TrainingData] = []
-        # Map: round_id -> prev_round_id (z uwzględnieniem Guid.Empty w Mapperze, jeśli to tam robisz)
-        prev_round_id_by_round_id: Dict[str, str] = (
-            Mapper.map_prev_round_id_by_round_id(
-                Mapper.map_round_no_by_round_id(league_rounds)
-            )
-        )
+
         round_no_by_round_id = Mapper.map_round_no_by_round_id(league_rounds)
 
         strength_map = TeamStrength.strength_map(team_strengths)
@@ -153,20 +187,24 @@ class TrainingBuilder:
             )
             return None
 
-        X_row = {
-            "home_p_off": home_strength.posterior.offensive,
-            "home_p_def": home_strength.posterior.defensive,
-            "home_l_off": home_strength.likelihood.offensive,
-            "home_l_def": home_strength.likelihood.defensive,
-            "away_p_off": away_strength.posterior.offensive,
-            "away_p_def": away_strength.posterior.defensive,
-            "away_l_off": away_strength.likelihood.offensive,
-            "away_l_def": away_strength.likelihood.defensive,
-            "diff_post_off": home_strength.posterior.offensive
-            - away_strength.posterior.offensive,
-            "diff_post_def": home_strength.posterior.defensive
-            - away_strength.posterior.defensive,
-        }
+        schema = TrainingBuilder.feature_schema()
+
+        X_row = dict.fromkeys(schema, 0.0)  # Pre-fill zerami wszystkie cechy z schema
+
+        X_row["home_p_off"] = home_strength.posterior.offensive
+        X_row["home_p_def"] = home_strength.posterior.defensive
+        X_row["home_l_off"] = home_strength.likelihood.offensive
+        X_row["home_l_def"] = home_strength.likelihood.defensive
+        X_row["away_p_off"] = away_strength.posterior.offensive
+        X_row["away_p_def"] = away_strength.posterior.defensive
+        X_row["away_l_off"] = away_strength.likelihood.offensive
+        X_row["away_l_def"] = away_strength.likelihood.defensive
+        X_row["diff_post_off"] = (
+            home_strength.posterior.offensive - away_strength.posterior.offensive
+        )
+        X_row["diff_post_def"] = (
+            home_strength.posterior.defensive - away_strength.posterior.defensive
+        )
 
         return TrainingData(
             x_row=X_row,

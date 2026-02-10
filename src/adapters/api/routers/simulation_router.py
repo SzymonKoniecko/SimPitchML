@@ -14,10 +14,9 @@ async def post_simulation(
 ):
     logger.info(f"API Request POST: post_simulation() with body={body}")
     
-    result = await service.init_prediction(body)
+    result = await service.run_prediction(body)
     
-    # Make sure to return a JSON-serializable type
-    return {"result": result}
+    return {"iterationResult": result}
 
 @router.get("/simulations/overviews/all")
 async def get_simulation_overview(
