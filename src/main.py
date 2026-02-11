@@ -28,7 +28,11 @@ logger = get_logger(__name__)
 
 FASTAPI_PORT = int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_REST", "4006"))
 GRPC_PORT = int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_GRPC", "40066"))
-IS_RELOAD = int(os.getenv("IS_RELOAD", False))
+
+raw_IS_RELOAD = os.getenv("IS_RELOAD", "False").strip()
+if raw_IS_RELOAD not in ("True", "False"):
+    raise ValueError(f"IS_RELOAD must be True/False, got {raw_IS_RELOAD!r}")
+IS_RELOAD = (raw_IS_RELOAD == "True")
 
 grpc_server: grpc.Server = None
 
