@@ -32,7 +32,6 @@ class IterationResult:
     execution_time: str
     team_strengths: List[TeamStrength]
     simulated_match_rounds: List[MatchRound]
-    created_by: str
 
     @staticmethod
     def team_strengths_to_json_value(team_strengths: List[TeamStrength]) -> str:

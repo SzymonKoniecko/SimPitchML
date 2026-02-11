@@ -98,7 +98,7 @@ class SimulationService:
             for sim_id in list_simulation_ids:
                 iteration_results = await self.run_get_iterationResults_by_simulationId(
                     simulation_id=sim_id
-                )
+                ).items
                 for it_result in iteration_results:
                     tmp_dataset = TrainingBuilder.build_dataset(
                         iteration_result=it_result,
@@ -147,13 +147,13 @@ class SimulationService:
 
     async def run_get_iterationResults_by_simulationId(
         self, simulation_id: str
-    ) -> Optional[IterationResult]:
+    ) -> Optional[PagedResponse[IterationResult]]:
         result: Optional[PagedResponse[IterationResult]] = (
             await self._iteration_results.get_all_iterationResults_BySimulationId(
                 simulation_id
             )
         )
-        return result.items
+        return result
 
     async def get_pending_simulations_to_sync(self) -> List[str]:
         synch = self._synchronization.get_synchronization() or Synchronization(

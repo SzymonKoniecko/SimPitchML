@@ -58,7 +58,7 @@ async def get_iteration_results(
         simulation_id=simulation_id
     )
 
-    if not result or not result.items:
+    if not result or not result:
         raise HTTPException(
             status_code=404,
             detail="No iteration results found or error occurred",

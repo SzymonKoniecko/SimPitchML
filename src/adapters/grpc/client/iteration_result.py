@@ -117,8 +117,7 @@ class IterationResultClient(BaseGrpcClient, IterationResultPort):
                 ),
                 simulated_match_rounds=IterationResult.simulated_match_rounds_to_json_value(
                     iteration_result.simulated_match_rounds
-                ),
-                created_by=iteration_result.created_by,
+                )
             )
 
             req = requests_pb2.SaveIterationResultRequest(
