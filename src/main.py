@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 FASTAPI_PORT = int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_REST", "4006"))
 GRPC_PORT = int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_GRPC", "40066"))
 
-logger.info(f'{int(os.getenv("SIMPITCHML_SERVICE_HOST_PORT_REST", "4006"))} // {int(os.getenv("SIMPITCHML_SERVICE_HOST_PORT_GRPC", "4006"))} // {int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_REST", "4006"))} // {int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_GRPC", "4006"))} // ')
+#logger.info(f'{int(os.getenv("SIMPITCHML_SERVICE_HOST_PORT_REST", "4006"))} // {int(os.getenv("SIMPITCHML_SERVICE_HOST_PORT_GRPC", "4006"))} // {int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_REST", "4006"))} // {int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_GRPC", "4006"))} // ')
 
 
 raw_IS_RELOAD = os.getenv("IS_RELOAD", "False").strip()
