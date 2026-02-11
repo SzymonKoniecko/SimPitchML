@@ -28,6 +28,7 @@ logger = get_logger(__name__)
 
 FASTAPI_PORT = int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_REST", "4006"))
 GRPC_PORT = int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_GRPC", "40066"))
+IS_RELOAD = int(os.getenv("IS_RELOAD", False))
 
 grpc_server: grpc.Server = None
 
@@ -79,4 +80,4 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 if __name__ == "__main__":
     logger.info(f"SimPitch ML REST:{FASTAPI_PORT} gRPC:{GRPC_PORT}")
-    uvicorn.run("src.main:app", host="0.0.0.0", port=FASTAPI_PORT, reload=True)
+    uvicorn.run("src.main:app", host="0.0.0.0", port=FASTAPI_PORT, reload=IS_RELOAD)
