@@ -1,9 +1,14 @@
 from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 
-from src.domain.entities import LeagueRound, TrainingData
+from src.domain.entities import IterationResult, LeagueRound, TrainingData
+from src.generatedSimulationProtos.SimulationService import (
+    commonTypes_pb2 as commonTypes_SimulationService,
+)
+from src.generatedSimPitchMlProtos.SimPitchMl.Predict import responses_pb2 as responses_pb2_SimPitchMl
 
 GUID_EMPTY = "00000000-0000-0000-0000-000000000000"
+
 
 class Mapper:
     def __init__(self):
@@ -23,7 +28,9 @@ class Mapper:
         *Risk if roundId is null* Currently its Guid.Empty
         """
 
-        id_by_no: Dict[int, str] = {round_no: round_id for round_id, round_no in rounds.items()}
+        id_by_no: Dict[int, str] = {
+            round_no: round_id for round_id, round_no in rounds.items()
+        }
 
         prev_by_id: Dict[str, str] = {}
 
@@ -32,7 +39,7 @@ class Mapper:
             prev_by_id[round_id] = prev_round_id
 
         return prev_by_id
-    
+
     @staticmethod
     def map_to_xy_matrix(
         dataset: List[TrainingData],
@@ -49,7 +56,12 @@ class Mapper:
         """
         if not dataset:
             empty_X = pd.DataFrame(columns=feature_schema or [])
-            return empty_X, pd.Series(dtype=int), pd.Series(dtype=int), (feature_schema or [])
+            return (
+                empty_X,
+                pd.Series(dtype=int),
+                pd.Series(dtype=int),
+                (feature_schema or []),
+            )
 
         rows = [item.x_row for item in dataset]
         X = pd.DataFrame(rows)  # list-of-dicts -> DataFrame
@@ -73,8 +85,8 @@ class Mapper:
         """
         if not dataset:
             return []
-        return list(pd.DataFrame([d.x_row for d in dataset]).columns) 
-    
+        return list(pd.DataFrame([d.x_row for d in dataset]).columns)
+
     @staticmethod
     def map_to_x_matrix(
         x_rows: List[dict[str, Any]],
@@ -84,3 +96,33 @@ class Mapper:
         X = pd.DataFrame(x_rows)
         # wymuś kolumny i kolejność (braki uzupełnij)
         return X.reindex(columns=feature_schema, fill_value=fill_value)
+
+    @staticmethod
+    def map_iteration_result_to_proto(
+        iteration_result: IterationResult,
+    ) -> commonTypes_SimulationService.IterationResultGrpc:
+        grpc_object = commonTypes_SimulationService.IterationResultGrpc(
+            id=iteration_result.id,
+            simulation_id=iteration_result.simulation_id,
+            # iteration_index = iteration_result.iteration_index, SimulationService will add proper one
+            start_date=iteration_result.start_date,
+            execution_time=iteration_result.execution_time,
+            team_strengths=IterationResult.team_strengths_to_json_value(
+                iteration_result.team_strengths
+            ),
+            simulated_match_rounds=IterationResult.simulated_match_rounds_to_json_value(
+                iteration_result.simulated_match_rounds
+            ),
+        )
+        return grpc_object
+
+    @staticmethod
+    def map_to_predict_response(
+        status: str, iteration_result, counter: int
+    ) -> responses_pb2_SimPitchMl.PredictResponse:
+        grpc_obj = responses_pb2_SimPitchMl.PredictResponse(
+            status=status,
+            predicted_iterations=counter,
+            iteration_result=Mapper.map_iteration_result_to_proto(iteration_result),
+        )
+        return grpc_obj

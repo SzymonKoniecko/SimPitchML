@@ -1,6 +1,6 @@
 # src/services/simulation_service.py
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import AsyncIterator, Dict, List, Optional, Tuple
 from src.core import get_logger
 from src.di.ports.adapters.league_round_port import LeagueRoundPort
 from src.di.ports.sportsdata_service_port import SportsDataServicePort
@@ -41,27 +41,23 @@ class SimulationService:
         self._sportsdata_service = sportsdata_service
         self._xgboost_service = xgboost_service
 
-    async def run_prediction(
+    async def run_prediction_stream(
         self, predict_request: PredictRequest
-    ) -> int:
+    ) -> AsyncIterator[Tuple[str, Optional[IterationResult], int]]:
         models: TrainedModels = None
+
         rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
             league_id=predict_request.league_id
         )
-        prev_round_id_by_round_id: Dict[str, str] = (
-            Mapper.map_prev_round_id_by_round_id(
-                Mapper.map_round_no_by_round_id(rounds)
-            )
+        prev_round_id_by_round_id: Dict[str, str] = Mapper.map_prev_round_id_by_round_id(
+            Mapper.map_round_no_by_round_id(rounds)
         )
 
         init_prediction = await self.init_prediction(
             predict_request, rounds, prev_round_id_by_round_id
         )
 
-        if (
-            init_prediction.list_simulation_ids is not None
-            and len(init_prediction.list_simulation_ids) > 0
-        ):
+        if init_prediction.list_simulation_ids:
             models = self._xgboost_service.train_evaluate_and_save(
                 predictRequest=predict_request,
                 t_dataset=init_prediction.training_dataset,
@@ -69,16 +65,19 @@ class SimulationService:
         else:
             models = self._xgboost_service.get_evaluated_models()
 
-        iteration_result_counter = 0
-        for iteration in range(0, predict_request.iteration_count):
+        counter = 0
+
+        for iteration in range(predict_request.iteration_count):
             iteration_result = await self._xgboost_service.predict_results(
                 predict_request, init_prediction, iteration, models
             )
-            iteration_result_counter = iteration_result_counter + 1
-            await self._iteration_results.send_iteration_result(iteration_result=iteration_result)
+            counter += 1
 
+            # stream item
+            yield ("RUNNING", iteration_result, counter)
 
-        return iteration_result_counter
+        # final event as last yield (instead of return value)
+        yield ("COMPLETED", None, counter)
 
     async def init_prediction(
         self,

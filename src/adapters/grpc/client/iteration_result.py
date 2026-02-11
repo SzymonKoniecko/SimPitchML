@@ -8,6 +8,7 @@ import os
 import grpc
 import json
 from src.adapters.grpc.client.baseGrpc import BaseGrpcClient
+from src.domain.features.mapper import Mapper
 from src.generatedSimulationProtos.SimulationService.IterationResult import (
     service_pb2_grpc,
     requests_pb2,
@@ -106,19 +107,7 @@ class IterationResultClient(BaseGrpcClient, IterationResultPort):
 
     async def send_iteration_result(self, iteration_result: IterationResult) -> bool:
         try:
-            grpc_object = commonTypes_pb2.IterationResultGrpc(
-                id=iteration_result.id,
-                simulation_id=iteration_result.simulation_id,
-                # iteration_index = iteration_result.iteration_index, SimulationService will add proper one
-                start_date=iteration_result.start_date,
-                execution_time=iteration_result.execution_time,
-                team_strengths=IterationResult.team_strengths_to_json_value(
-                    iteration_result.team_strengths
-                ),
-                simulated_match_rounds=IterationResult.simulated_match_rounds_to_json_value(
-                    iteration_result.simulated_match_rounds
-                )
-            )
+            grpc_object = Mapper.map_iteration_result_to_proto(iteration_result)
 
             req = requests_pb2.SaveIterationResultRequest(
                 iteration_result_grpc=grpc_object

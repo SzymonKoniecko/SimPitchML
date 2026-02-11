@@ -17,7 +17,7 @@ from src.generatedSimPitchMlProtos.SimPitchMl.Predict import responses_pb2 as Si
 from src.generatedSimPitchMlProtos.SimPitchMl import commonTypes_pb2 as SimPitchMl_dot_commonTypes__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n SimPitchMl/Predict/service.proto\x12!SimPitchProtos.SimPitchMl.Predict\x1a!SimPitchMl/Predict/requests.proto\x1a\"SimPitchMl/Predict/responses.proto\x1a\x1cSimPitchMl/commonTypes.proto2\x8a\x01\n\x0ePredictService\x12x\n\x0fStartPrediction\x12\x31.SimPitchProtos.SimPitchMl.Predict.PredictRequest\x1a\x32.SimPitchProtos.SimPitchMl.Predict.PredictResponseB$\xaa\x02!SimPitchProtos.SimPitchMl.Predictb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n SimPitchMl/Predict/service.proto\x12!SimPitchProtos.SimPitchMl.Predict\x1a!SimPitchMl/Predict/requests.proto\x1a\"SimPitchMl/Predict/responses.proto\x1a\x1cSimPitchMl/commonTypes.proto2\x8d\x01\n\x0ePredictService\x12{\n\x10StreamPrediction\x12\x31.SimPitchProtos.SimPitchMl.Predict.PredictRequest\x1a\x32.SimPitchProtos.SimPitchMl.Predict.PredictResponse0\x01\x42$\xaa\x02!SimPitchProtos.SimPitchMl.Predictb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -26,5 +26,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._options = None
   _globals['DESCRIPTOR']._serialized_options = b'\252\002!SimPitchProtos.SimPitchMl.Predict'
   _globals['_PREDICTSERVICE']._serialized_start=173
-  _globals['_PREDICTSERVICE']._serialized_end=311
+  _globals['_PREDICTSERVICE']._serialized_end=314
 # @@protoc_insertion_point(module_scope)

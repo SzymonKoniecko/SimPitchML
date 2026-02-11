@@ -15,8 +15,8 @@ class PredictServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.StartPrediction = channel.unary_unary(
-                '/SimPitchProtos.SimPitchMl.Predict.PredictService/StartPrediction',
+        self.StreamPrediction = channel.unary_stream(
+                '/SimPitchProtos.SimPitchMl.Predict.PredictService/StreamPrediction',
                 request_serializer=SimPitchMl_dot_Predict_dot_requests__pb2.PredictRequest.SerializeToString,
                 response_deserializer=SimPitchMl_dot_Predict_dot_responses__pb2.PredictResponse.FromString,
                 )
@@ -25,7 +25,7 @@ class PredictServiceStub(object):
 class PredictServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def StartPrediction(self, request, context):
+    def StreamPrediction(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -34,8 +34,8 @@ class PredictServiceServicer(object):
 
 def add_PredictServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'StartPrediction': grpc.unary_unary_rpc_method_handler(
-                    servicer.StartPrediction,
+            'StreamPrediction': grpc.unary_stream_rpc_method_handler(
+                    servicer.StreamPrediction,
                     request_deserializer=SimPitchMl_dot_Predict_dot_requests__pb2.PredictRequest.FromString,
                     response_serializer=SimPitchMl_dot_Predict_dot_responses__pb2.PredictResponse.SerializeToString,
             ),
@@ -50,7 +50,7 @@ class PredictService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def StartPrediction(request,
+    def StreamPrediction(request,
             target,
             options=(),
             channel_credentials=None,
@@ -60,7 +60,7 @@ class PredictService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimPitchMl.Predict.PredictService/StartPrediction',
+        return grpc.experimental.unary_stream(request, target, '/SimPitchProtos.SimPitchMl.Predict.PredictService/StreamPrediction',
             SimPitchMl_dot_Predict_dot_requests__pb2.PredictRequest.SerializeToString,
             SimPitchMl_dot_Predict_dot_responses__pb2.PredictResponse.FromString,
             options, channel_credentials,

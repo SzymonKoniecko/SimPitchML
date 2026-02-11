@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 from src.generatedSimPitchMlProtos.SimPitchMl import commonTypes_pb2 as SimPitchMl_dot_commonTypes__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"SimPitchMl/Predict/responses.proto\x12!SimPitchProtos.SimPitchMl.Predict\x1a\x1cSimPitchMl/commonTypes.proto\"?\n\x0fPredictResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x1c\n\x14predicted_iterations\x18\x02 \x01(\x05\x42$\xaa\x02!SimPitchProtos.SimPitchMl.Predictb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\"SimPitchMl/Predict/responses.proto\x12!SimPitchProtos.SimPitchMl.Predict\x1a\x1cSimPitchMl/commonTypes.proto\"\x89\x01\n\x0fPredictResponse\x12\x0e\n\x06status\x18\x01 \x01(\t\x12\x1c\n\x14predicted_iterations\x18\x02 \x01(\x05\x12H\n\x10iteration_result\x18\x03 \x01(\x0b\x32..SimPitchProtos.SimPitchMl.IterationResultGrpcB$\xaa\x02!SimPitchProtos.SimPitchMl.Predictb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -23,6 +23,6 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'SimPitchMl.Predict.response
 if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._options = None
   _globals['DESCRIPTOR']._serialized_options = b'\252\002!SimPitchProtos.SimPitchMl.Predict'
-  _globals['_PREDICTRESPONSE']._serialized_start=103
-  _globals['_PREDICTRESPONSE']._serialized_end=166
+  _globals['_PREDICTRESPONSE']._serialized_start=104
+  _globals['_PREDICTRESPONSE']._serialized_end=241
 # @@protoc_insertion_point(module_scope)

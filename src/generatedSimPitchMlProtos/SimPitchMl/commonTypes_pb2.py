@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cSimPitchMl/commonTypes.proto\x12\x19SimPitchProtos.SimPitchMl\"\xa3\x02\n\x0bPredictGrpc\x12\x15\n\rsimulation_id\x18\x01 \x01(\t\x12\x11\n\tleague_id\x18\x02 \x01(\t\x12\x17\n\x0fiteration_count\x18\x03 \x01(\x05\x12\x16\n\x0eteam_strengths\x18\x04 \x01(\t\x12\x1b\n\x13matches_to_simulate\x18\x05 \x01(\t\x12\x1c\n\x14train_until_round_no\x18\x06 \x01(\x05\x12 \n\x13league_avg_strength\x18\x07 \x01(\x02H\x00\x88\x01\x01\x12\x11\n\x04seed\x18\x08 \x01(\x05H\x01\x88\x01\x01\x12\x18\n\x0btrain_ratio\x18\t \x01(\x02H\x02\x88\x01\x01\x42\x16\n\x14_league_avg_strengthB\x07\n\x05_seedB\x0e\n\x0c_train_ratioB\x1c\xaa\x02\x19SimPitchProtos.SimPitchMlb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1cSimPitchMl/commonTypes.proto\x12\x19SimPitchProtos.SimPitchMl\"\xa3\x02\n\x0bPredictGrpc\x12\x15\n\rsimulation_id\x18\x01 \x01(\t\x12\x11\n\tleague_id\x18\x02 \x01(\t\x12\x17\n\x0fiteration_count\x18\x03 \x01(\x05\x12\x16\n\x0eteam_strengths\x18\x04 \x01(\t\x12\x1b\n\x13matches_to_simulate\x18\x05 \x01(\t\x12\x1c\n\x14train_until_round_no\x18\x06 \x01(\x05\x12 \n\x13league_avg_strength\x18\x07 \x01(\x02H\x00\x88\x01\x01\x12\x11\n\x04seed\x18\x08 \x01(\x05H\x01\x88\x01\x01\x12\x18\n\x0btrain_ratio\x18\t \x01(\x02H\x02\x88\x01\x01\x42\x16\n\x14_league_avg_strengthB\x07\n\x05_seedB\x0e\n\x0c_train_ratio\"\xce\x01\n\x13IterationResultGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x15\n\rsimulation_id\x18\x02 \x01(\t\x12\x1c\n\x0fiteration_index\x18\x03 \x01(\x05H\x00\x88\x01\x01\x12\x12\n\nstart_date\x18\x04 \x01(\t\x12\x16\n\x0e\x65xecution_time\x18\x05 \x01(\t\x12\x16\n\x0eteam_strengths\x18\x06 \x01(\t\x12\x1e\n\x16simulated_match_rounds\x18\x07 \x01(\tB\x12\n\x10_iteration_indexB\x1c\xaa\x02\x19SimPitchProtos.SimPitchMlb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -24,4 +24,6 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._serialized_options = b'\252\002\031SimPitchProtos.SimPitchMl'
   _globals['_PREDICTGRPC']._serialized_start=60
   _globals['_PREDICTGRPC']._serialized_end=351
+  _globals['_ITERATIONRESULTGRPC']._serialized_start=354
+  _globals['_ITERATIONRESULTGRPC']._serialized_end=560
 # @@protoc_insertion_point(module_scope)

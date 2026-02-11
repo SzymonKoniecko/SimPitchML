@@ -306,10 +306,9 @@ class PredictRequest:
     matches_to_simulate: List[MatchRound]
     train_until_round_no: int
     
-    league_avg_strength: float
+    league_avg_strength: Optional[float] = None
     seed: Optional[int] = None
-    train_ratio: float = 0.8
-
+    train_ratio: Optional[float] = None
 
 @dataclass(frozen=True)
 class TrainedModels:

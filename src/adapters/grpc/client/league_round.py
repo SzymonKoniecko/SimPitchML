@@ -27,7 +27,7 @@ class LeagueRoundClient(BaseGrpcClient, LeagueRoundPort):
             response = await self.stub.GetAllLeagueRoundsByParams(
                 request,
                 timeout=self.grpc_config.timeout_seconds,
-            )  # per-RPC timeout [web:23]
+            )
         except grpc.RpcError as e:
             logger.exception(
                 "LeagueRound RPC failed",

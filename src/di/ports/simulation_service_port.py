@@ -1,19 +1,17 @@
-from typing import Dict, List, Optional, Protocol, Tuple
+from typing import AsyncIterator, Dict, List, Optional, Protocol, Tuple
 
 from src.domain.entities import (
     InitPrediction,
     IterationResult,
     LeagueRound,
-    PredictRequest,
-    TrainingData,
-    TrainingDataset,
+    PredictRequest
 )
 
 
 class SimulationServicePort(Protocol):
-    async def run_prediction(
+    async def run_prediction_stream(
         self, predict_request: PredictRequest
-    ) -> int: ...
+    ) -> AsyncIterator[Tuple[str, Optional[IterationResult], int]]: ...
     async def init_prediction(
         self,
         predict_request: PredictRequest,
