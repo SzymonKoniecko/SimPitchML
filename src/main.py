@@ -39,34 +39,32 @@ IS_RELOAD = (raw_IS_RELOAD == "True")
 
 grpc_server: grpc.Server = None
 
+logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global grpc_server
-
-    server = grpc.server(ThreadPoolExecutor(max_workers=10))
+    server = grpc.aio.server()
 
     predict_servicer = get_predict_grpc_servicer()
     service_pb2_grpc.add_PredictServiceServicer_to_server(predict_servicer, server)
-    
-    server.add_insecure_port(f"0.0.0.0:{GRPC_PORT}")
 
+    server.add_insecure_port(f"[::]:{GRPC_PORT}")
 
     SERVICE_NAMES = (
         service_pb2.DESCRIPTOR.services_by_name["PredictService"].full_name,
         reflection.SERVICE_NAME,
     )
-    reflection.enable_server_reflection(SERVICE_NAMES, server)  # reflection pattern [web:130]
+    reflection.enable_server_reflection(SERVICE_NAMES, server)
 
-    server.start()
-    grpc_server = server
-    logger.info(f"gRPC started on :{GRPC_PORT}")
+    await server.start()
+    app.state.grpc_server = server
+    logger.info("gRPC(aio) started on :%s", GRPC_PORT)
 
-    yield
-
-    grpc_server.stop(0)
-    grpc_server.wait_for_termination(timeout=5)
-    logger.info("gRPC stopped")
+    try:
+        yield
+    finally:
+        await server.stop(0)
+        logger.info("gRPC(aio) stopped")
 
 def create_app() -> FastAPI:
     app = FastAPI(title="SimPitch ML Service", lifespan=lifespan)
