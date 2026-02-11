@@ -29,6 +29,9 @@ logger = get_logger(__name__)
 FASTAPI_PORT = int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_REST", "4006"))
 GRPC_PORT = int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_GRPC", "40066"))
 
+logger.info(f'{int(os.getenv("SIMPITCHML_SERVICE_HOST_PORT_REST", "4006"))} // {int(os.getenv("SIMPITCHML_SERVICE_HOST_PORT_GRPC", "4006"))} // {int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_REST", "4006"))} // {int(os.getenv("SIMPITCHML_SERVICE_CONTAINER_PORT_GRPC", "4006"))} // ')
+
+
 raw_IS_RELOAD = os.getenv("IS_RELOAD", "False").strip()
 if raw_IS_RELOAD not in ("True", "False"):
     raise ValueError(f"IS_RELOAD must be True/False, got {raw_IS_RELOAD!r}")
@@ -45,8 +48,9 @@ async def lifespan(app: FastAPI):
 
     predict_servicer = get_predict_grpc_servicer()
     service_pb2_grpc.add_PredictServiceServicer_to_server(predict_servicer, server)
+    
+    server.add_insecure_port(f"0.0.0.0:{GRPC_PORT}")
 
-    server.add_insecure_port(f"[::]:{GRPC_PORT}")
 
     SERVICE_NAMES = (
         service_pb2.DESCRIPTOR.services_by_name["PredictService"].full_name,
