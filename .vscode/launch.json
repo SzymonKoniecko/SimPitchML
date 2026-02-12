@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "name": "Python Debugger: src.main",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "src.main",
+            "justMyCode": true
+        }
+    ]
+}

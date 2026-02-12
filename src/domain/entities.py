@@ -62,14 +62,15 @@ class IterationResult:
         return [
             TeamStrength(
                 team_id=item.get("TeamId") or item.get("team_id"),
-                likelihood=StrengthItem(
-                    offensive=item["Likelihood"]["Offensive"],
-                    defensive=item["Likelihood"]["Defensive"],
-                ),
-                posterior=StrengthItem(
-                    offensive=item["Posterior"]["Offensive"],
-                    defensive=item["Posterior"]["Defensive"],
-                ),
+                
+                    likelihood=StrengthItem(
+                        offensive=(likelihood.get("Offensive") or likelihood.get("offensive") or likelihood.get("Item1") or 1.0),
+                        defensive=(likelihood.get("Defensive") or likelihood.get("defensive") or likelihood.get("Item2") or 1.0),
+                    ),
+                    posterior=StrengthItem(
+                        offensive=(posterior.get("Offensive") or posterior.get("offensive") or likelihood.get("Item1") or 1.0),
+                        defensive=(posterior.get("Defensive") or posterior.get("defensive") or likelihood.get("Item2") or 1.0),
+                    ),
                 expected_goals=str(
                     item.get("ExpectedGoals", 0.0)
                 ),  # Safe access + string conversion
@@ -116,16 +117,16 @@ class IterationResult:
                 TeamStrength(
                     team_id=item.get("TeamId") or item.get("team_id"),
                     likelihood=StrengthItem(
-                        offensive=(likelihood.get("Offensive") or likelihood.get("offensive") or 1.0),
-                        defensive=(likelihood.get("Defensive") or likelihood.get("defensive") or 1.0),
+                        offensive=(likelihood.get("Offensive") or likelihood.get("offensive") or likelihood.get("Item1") or 1.0),
+                        defensive=(likelihood.get("Defensive") or likelihood.get("defensive") or likelihood.get("Item2") or 1.0),
                     ),
                     posterior=StrengthItem(
-                        offensive=(posterior.get("Offensive") or posterior.get("offensive") or 1.0),
-                        defensive=(posterior.get("Defensive") or posterior.get("defensive") or 1.0),
+                        offensive=(posterior.get("Offensive") or posterior.get("offensive") or likelihood.get("Item1") or 1.0),
+                        defensive=(posterior.get("Defensive") or posterior.get("defensive") or likelihood.get("Item2") or 1.0),
                     ),
                     expected_goals=str(item.get("ExpectedGoals") or item.get("expected_goals") or 0.0),
                     last_update=item.get("LastUpdate") or item.get("last_update") or "N/A",
-                    round_id=item.get("RoundId") or item.get("round_id") or "",
+                    round_id=item.get("RoundId") or item.get("round_id") or None,
                 )
             )
 
@@ -297,7 +298,7 @@ class TeamStrength:
         return list(strength_map.values())
 
     @staticmethod
-    def league_average_baseline(
+    def get_team_strength_average_baseline(
         *,
         round_id: str = "LEAGUE_AVG",
         last_update: str = "2001-01-01T22:00:00.000000",

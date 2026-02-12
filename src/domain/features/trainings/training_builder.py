@@ -20,14 +20,14 @@ class TrainingBuilder:
     def feature_schema() -> List[str]:
         """
         **Zwraca standardowy schemat cech (nazwy kolumn i kolejność) dla wszystkich X w projekcie.**
-        
+
         To jest **stały kontrakt** między treningiem a predykcją: X_train i X_predict muszą mieć identyczne kolumny i kolejność.
-        
+
         Zwraca zawsze tę samą listę (nie zależy od danych):
-        ['home_p_off', 'home_p_def', 'home_l_off', 'home_l_def', 
+        ['home_p_off', 'home_p_def', 'home_l_off', 'home_l_def',
          'away_p_off', 'away_p_def', 'away_l_off', 'away_l_def',
          'diff_post_off', 'diff_post_def']
-        
+
         Użycia:
         - W treningu: TrainingData.to_xy(..., feature_schema=TrainingData.feature_schema())
         - W predykcji: X_predict = Mapper.map_to_x_matrix(x_rows, TrainingData.feature_schema())
@@ -35,22 +35,20 @@ class TrainingBuilder:
         """
         return [
             # Gospodarz
-            "home_p_off",    # home posterior offensive (długoterminowy atak)
-            "home_p_def",    # home posterior defensive
-            "home_l_off",    # home likelihood offensive (forma ataku)
-            "home_l_def",    # home likelihood defensive
-            
+            "home_p_off",  # home posterior offensive (długoterminowy atak)
+            "home_p_def",  # home posterior defensive
+            "home_l_off",  # home likelihood offensive (forma ataku)
+            "home_l_def",  # home likelihood defensive
             # Gość
-            "away_p_off",    # away posterior offensive
-            "away_p_def",    # away posterior defensive
-            "away_l_off",    # away likelihood offensive
-            "away_l_def",    # away likelihood defensive
-            
+            "away_p_off",  # away posterior offensive
+            "away_p_def",  # away posterior defensive
+            "away_l_off",  # away likelihood offensive
+            "away_l_def",  # away likelihood defensive
             # Różnice (derived)
-            "diff_post_off", # home_p_off - away_p_def (przewaga ataku gospodarza)
-            "diff_post_def", # home_p_def - away_p_off (przewaga obrony gospodarza)
+            "diff_post_off",  # home_p_off - away_p_def (przewaga ataku gospodarza)
+            "diff_post_def",  # home_p_def - away_p_off (przewaga obrony gospodarza)
         ]
-    
+
     @staticmethod
     def build_dataset(
         iteration_result: IterationResult,
@@ -58,7 +56,8 @@ class TrainingBuilder:
         match_rounds: List[
             MatchRound
         ],  # simulated_match_rounds but with the played matched BEFORE simulation
-        prev_round_id_by_round_id: Dict[str, str]
+        prev_round_id_by_round_id: Dict[str, str],
+        league_avg : str
     ) -> List[TrainingData]:
         if match_rounds is None or len(match_rounds) == 0:
             raise ValueError("Value cannot be None = match_rounds")
@@ -74,7 +73,8 @@ class TrainingBuilder:
             match_results=match_rounds,
             team_strengths=iteration_result.team_strengths,
             league_rounds=league_rounds,
-            prev_round_id_by_round_id=prev_round_id_by_round_id
+            prev_round_id_by_round_id=prev_round_id_by_round_id,
+            league_avg=league_avg
         )
 
     @staticmethod
@@ -82,7 +82,8 @@ class TrainingBuilder:
         match_results: List[MatchRound],
         team_strengths: List[TeamStrength],
         league_rounds: List[LeagueRound],
-        prev_round_id_by_round_id: Dict[str, str]
+        prev_round_id_by_round_id: Dict[str, str],
+        league_avg : str
     ) -> List[TrainingData]:
 
         dataset: List[TrainingData] = []
@@ -93,29 +94,22 @@ class TrainingBuilder:
 
         for result in (r for r in match_results if r.is_played is True):
             prev_round_id = prev_round_id_by_round_id.get(result.round_id)
-            if not prev_round_id:
-                logger.error(
-                    f"Missing prev_round_id for matchId={result.id}, round_id={result.round_id}"
-                )
-                continue  # albo: raise, jeśli to ma przerwać cały trening
-
-            league_avg_strength = (
-                TeamStrength.league_average_baseline()
-            )  # dodaj/zaimplementuj w encji, np. 1.0/1.0
+            if prev_round_id == None:
+                prev_round_id = result.round_id
 
             home_strength = TrainingBuilder.get_strength_or_fallback(
                 strength_map,
                 round_no_by_round_id,
                 result.home_team_id,
                 prev_round_id,
-                league_avg_strength=league_avg_strength,
+                league_avg_strength=league_avg,
             )
             away_strength = TrainingBuilder.get_strength_or_fallback(
                 strength_map,
                 round_no_by_round_id,
                 result.away_team_id,
                 prev_round_id,
-                league_avg_strength=league_avg_strength,
+                league_avg_strength=league_avg,
             )
 
             td = TrainingBuilder.build_single_training_data(
@@ -138,7 +132,7 @@ class TrainingBuilder:
         *,
         league_avg_strength: Optional[float] = None,
     ) -> TeamStrength:
-        
+
         # 1) Exact match
         exact = strength_map.get((team_id, prev_round_id))
         if exact is not None:
@@ -192,10 +186,12 @@ class TrainingBuilder:
 
         logger.warning(
             "League-average baseline used (no TeamStrength found). team_id=%s prev_round_id=%s avg=%s",
-            team_id, prev_round_id, avg
+            team_id,
+            prev_round_id,
+            avg,
         )
 
-        return TeamStrength.league_average_baseline(
+        return TeamStrength.get_team_strength_average_baseline(
             team_id=team_id,
             round_id=prev_round_id,
             offensive=float(avg),
@@ -203,7 +199,6 @@ class TrainingBuilder:
             last_update=datetime.utcnow().isoformat(),
             expected_goals="N/A",
         )
-
 
     @staticmethod
     def build_single_training_data(

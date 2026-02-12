@@ -118,6 +118,7 @@ class SimulationService:
                             simulated_match_rounds=it_result.simulated_match_rounds,
                         ),
                         prev_round_id_by_round_id=prev_round_id_by_round_id,
+                        league_avg=predict_request.league_avg_strength
                     )
                     list_training_data_dataset.extend(  # stays in the single list
                         tmp_dataset

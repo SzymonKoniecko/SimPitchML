@@ -63,8 +63,8 @@ class IterationResultClient(BaseGrpcClient, IterationResultPort):
                             iteration_index=o.iteration_index,
                             start_date=o.start_date,
                             execution_time=o.execution_time,
-                            team_strengths=IterationResult.from_team_strength_raw(
-                                json.loads(o.team_strengths)
+                            team_strengths=IterationResult.from_team_strength_raw_new(
+                                o.team_strengths
                             ),
                             simulated_match_rounds=IterationResult.from_sim_matches_raw(
                                 json.loads(o.simulated_match_rounds)

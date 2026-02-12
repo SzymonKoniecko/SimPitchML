@@ -38,7 +38,7 @@ class XgboostService:
 
     def _create_model(self, seed: Optional[int]) -> xgb.XGBRegressor:
         params = dict(BASE_PARAMS)
-        logger.info(f' \n CREATED [XGBOOST MODEL] FOR SEED {seed} \n')
+        logger.info(f" \n CREATED [XGBOOST MODEL] FOR SEED {seed} \n")
         if seed is not None:
             params["random_state"] = seed
         return xgb.XGBRegressor(**params)
@@ -126,7 +126,7 @@ class XgboostService:
         init_prediction: InitPrediction,
         iteration_index: int,
         models: TrainedModels,
-    )-> IterationResult:
+    ) -> IterationResult:
         start_execution_time = perf_counter()
 
         iteration_result = IterationResult(
@@ -141,32 +141,45 @@ class XgboostService:
         iteration_result.simulated_match_rounds = []
         strength_map = TeamStrength.strength_map(predictRequest.team_strengths)
         for match_round in predictRequest.matches_to_simulate:
-            prev_round_id = init_prediction.prev_round_id_by_round_id.get(match_round.round_id),
+            prev_round_id = init_prediction.prev_round_id_by_round_id.get(
+                match_round.round_id, None
+            )
             home_strength = TrainingBuilder.get_strength_or_fallback(
                 strength_map,
                 init_prediction.round_no_by_round_id,
                 match_round.home_team_id,
                 prev_round_id,
-                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7) or 1.7,
+                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7)
             )
             away_strength = TrainingBuilder.get_strength_or_fallback(
                 strength_map,
                 init_prediction.round_no_by_round_id,
                 match_round.away_team_id,
                 prev_round_id,
-                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7) or 1.7,
+                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7)
             )
-            predicted_match_round, (predicted_home_ts, predicted_away_ts) = await self.predict_single_result(match_round, home_strength, away_strength, prev_round_id, models)
+            predicted_match_round, (predicted_home_ts, predicted_away_ts) = (
+                await self.predict_single_result(
+                    match_round, home_strength, away_strength, prev_round_id, models
+                )
+            )
             iteration_result.simulated_match_rounds.append(predicted_match_round)
 
-            strength_map = TeamStrength.add_to_strength_map(strength_map, predicted_home_ts)
-            strength_map = TeamStrength.add_to_strength_map(strength_map, predicted_away_ts)
-
+            strength_map = TeamStrength.add_to_strength_map(
+                strength_map, predicted_home_ts
+            )
+            strength_map = TeamStrength.add_to_strength_map(
+                strength_map, predicted_away_ts
+            )
 
         end_execution_time = perf_counter()
-        iteration_result.execution_time = str(timedelta(seconds=end_execution_time - start_execution_time))
+        iteration_result.execution_time = str(
+            timedelta(seconds=end_execution_time - start_execution_time)
+        )
 
-        iteration_result.team_strengths = TeamStrength.strength_map_to_list(strength_map)
+        iteration_result.team_strengths = TeamStrength.strength_map_to_list(
+            strength_map
+        )
         return iteration_result
 
     async def predict_single_result(
@@ -175,21 +188,21 @@ class XgboostService:
         home_strength: Optional[TeamStrength],
         away_strength: Optional[TeamStrength],
         prev_round_id: str,
-        models: TrainedModels
+        models: TrainedModels,
     ) -> Tuple[MatchRound, Tuple[TeamStrength, TeamStrength]]:
         """
         Predykuje wynik pojedynczego MatchRound i zwraca wypełniony obiekt + nowe TeamStrength.
-        
+
         Args:
             match_round: Pusty MatchRound (is_played=False).
             models: Wytrenowane modele + schema.
             prev_round_id: Snapshot TeamStrength PRZED tym meczem.
             league_avg_strength: Fallback TeamStrength (jeśli brak danych o drużynie).
-        
+
         Returns:
             (wypełniony MatchRound, (home_strength_updated, away_strength_updated))
         """
-        
+
         x_row = TrainingBuilder.build_single_training_data(
             match_round=match_round,
             home_strength=home_strength,
@@ -215,11 +228,15 @@ class XgboostService:
         match_round.is_draw = home_goals == away_goals
         match_round.is_played = True
 
-        # TeamStrength (aktualizacja po meczu)
+        # TeamStrength (aktualizacja po meczu)  NAPRAW UZYWAJAC KONREKTNYCH WZOROW Z SIMULATION_SERVICE
         team_strength_home = TeamStrength(
             team_id=match_round.home_team_id,
-            likelihood=StrengthItem(offensive=pred_home_goals, defensive=pred_away_goals),  # form
-            posterior=StrengthItem(offensive=pred_home_goals, defensive=pred_away_goals),  # long-term form
+            likelihood=StrengthItem(
+                offensive=pred_home_goals, defensive=pred_away_goals
+            ),  # form
+            posterior=StrengthItem(
+                offensive=pred_home_goals, defensive=pred_away_goals
+            ),  # long-term form
             expected_goals=str(pred_home_goals),
             last_update="2026-02-10",  # current timestamp
             round_id=match_round.round_id,  # stan PO tym meczu
@@ -227,8 +244,12 @@ class XgboostService:
 
         team_strength_away = TeamStrength(
             team_id=match_round.away_team_id,
-            likelihood=StrengthItem(offensive=pred_away_goals, defensive=pred_home_goals),
-            posterior=StrengthItem(offensive=pred_away_goals, defensive=pred_home_goals),
+            likelihood=StrengthItem(
+                offensive=pred_away_goals, defensive=pred_home_goals
+            ),
+            posterior=StrengthItem(
+                offensive=pred_away_goals, defensive=pred_home_goals
+            ),
             expected_goals=str(pred_away_goals),
             last_update="2026-02-10",
             round_id=match_round.round_id,

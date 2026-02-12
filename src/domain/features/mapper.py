@@ -37,7 +37,7 @@ class Mapper:
         prev_by_id: Dict[str, str] = {}
 
         for round_id, round_no in rounds.items():
-            prev_round_id = id_by_no.get(round_no - 1, GUID_EMPTY)
+            prev_round_id = id_by_no.get(round_no - 1, None)
             prev_by_id[round_id] = prev_round_id
 
         return prev_by_id
