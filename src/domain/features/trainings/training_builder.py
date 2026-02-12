@@ -135,7 +135,7 @@ class TrainingBuilder:
         team_id: str,
         prev_round_id: str,
         *,
-        league_avg_strength: Optional[TeamStrength] = None,
+        league_avg_strength: Optional[float] = None,
     ) -> Optional[TeamStrength]:
         # 1) Exact match
         exact = strength_map.get((team_id, prev_round_id))

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional, Tuple
+from time import perf_counter
 from datetime import datetime, timedelta
 import uuid
 import xgboost as xgb
@@ -125,13 +126,16 @@ class XgboostService:
         iteration_index: int,
         models: TrainedModels,
     )-> IterationResult:
-        start_execution_time = timedelta.perf_counter()
+        start_execution_time = perf_counter()
 
         iteration_result = IterationResult(
             id=uuid.uuid4(),
             simulation_id=predictRequest.simulation_id,
             iteration_index=iteration_index,
             start_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            execution_time="",
+            team_strengths=None,
+            simulated_match_rounds=None,
         )
         iteration_result.simulated_match_rounds = []
         strength_map = TeamStrength.strength_map(predictRequest.team_strengths)
@@ -142,22 +146,23 @@ class XgboostService:
                 init_prediction.round_no_by_round_id,
                 match_round.home_team_id,
                 prev_round_id,
-                league_avg_strength=predictRequest.league_avg_strength,
+                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7) or 1.7,
             )
             away_strength = TrainingBuilder.get_strength_or_fallback(
                 strength_map,
                 init_prediction.round_no_by_round_id,
                 match_round.away_team_id,
                 prev_round_id,
-                league_avg_strength=predictRequest.league_avg_strength,
+                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7) or 1.7,
             )
             predicted_match_round, predicted_team_strength = await self.predict_single_result(match_round, home_strength, away_strength, prev_round_id, models)
             iteration_result.simulated_match_rounds.append(predicted_match_round)
             strength_map = TeamStrength.add_to_strength_map(strength_map, predicted_team_strength)
 
 
-        end_execution_time = timedelta.perf_counter()
-        iteration_result.execution_time = timedelta(seconds=end_execution_time - start_execution_time)
+        end_execution_time = perf_counter()
+        iteration_result.execution_time = str(timedelta(seconds=end_execution_time - start_execution_time))
+
         iteration_result.team_strengths = TeamStrength.strength_map_to_list(strength_map)
         return iteration_result
 

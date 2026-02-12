@@ -1,3 +1,4 @@
+from src.adapters.grpc.server.predict_service import PredictServiceServicer
 import uvicorn
 import grpc
 import asyncio
@@ -5,7 +6,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 from src.adapters.api.routers import simulation_router, sportsdata_router
 from src.core.config import config
 from src.core.logger import get_logger
@@ -41,30 +42,77 @@ grpc_server: grpc.Server = None
 
 logger = get_logger(__name__)
 
+from src.di.services import (
+    get_sim_engine_client,
+    get_iteration_result_client,
+    get_league_round_client,
+    get_match_round_client,
+    get_json_repo,
+    get_synchronization_service,
+    get_xgboost_context_service,
+    get_xgboost_service,
+    get_sportsdata_service,
+    get_simulation_service,
+)
+
+async def _anext(agen):
+    return await agen.__anext__()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    server = grpc.aio.server()
+    async with AsyncExitStack() as stack:
+        # resolve async-generator deps (te z yield)
+        engine_agen = get_sim_engine_client()
+        engine = await _anext(engine_agen)
+        stack.push_async_callback(engine_agen.aclose)
 
-    predict_servicer = get_predict_grpc_servicer()
-    service_pb2_grpc.add_PredictServiceServicer_to_server(predict_servicer, server)
+        iter_agen = get_iteration_result_client()
+        iteration_results = await _anext(iter_agen)
+        stack.push_async_callback(iter_agen.aclose)
 
-    server.add_insecure_port(f"[::]:{GRPC_PORT}")
+        league_agen = get_league_round_client()
+        league_round = await _anext(league_agen)
+        stack.push_async_callback(league_agen.aclose)
 
-    SERVICE_NAMES = (
-        service_pb2.DESCRIPTOR.services_by_name["PredictService"].full_name,
-        reflection.SERVICE_NAME,
-    )
-    reflection.enable_server_reflection(SERVICE_NAMES, server)
+        match_agen = get_match_round_client()
+        match_round = await _anext(match_agen)
+        stack.push_async_callback(match_agen.aclose)
 
-    await server.start()
-    app.state.grpc_server = server
-    logger.info("gRPC(aio) started on :%s", GRPC_PORT)
+        # resolve sync deps
+        repo = get_json_repo()
+        synchronization = get_synchronization_service(repo=repo)
+        xgb_context = get_xgboost_context_service(repo=repo)
+        xgboost_service = get_xgboost_service(context=xgb_context)
+        sportsdata_service = get_sportsdata_service(league_round=league_round, match_round=match_round)
 
-    try:
+        # IMPORTANT: to jest TA SAMA instancja SimulationService z Twojego factory
+        simulation_service = get_simulation_service(
+            engine=engine,
+            iteration_results=iteration_results,
+            synchronization=synchronization,
+            sportsdata_service=sportsdata_service,
+            xgboost_service=xgboost_service,
+        )
+
+        # gRPC aio server (dla stream)
+        server = grpc.aio.server()
+        servicer = PredictServiceServicer(simulation_service)
+        service_pb2_grpc.add_PredictServiceServicer_to_server(servicer, server)
+
+        server.add_insecure_port(f"[::]:{GRPC_PORT}")
+
+        SERVICE_NAMES = (
+            service_pb2.DESCRIPTOR.services_by_name["PredictService"].full_name,
+            reflection.SERVICE_NAME,
+        )
+        reflection.enable_server_reflection(SERVICE_NAMES, server)
+
+        await server.start()
+        app.state.grpc_server = server
+
         yield
-    finally:
+
         await server.stop(0)
-        logger.info("gRPC(aio) stopped")
 
 def create_app() -> FastAPI:
     app = FastAPI(title="SimPitch ML Service", lifespan=lifespan)

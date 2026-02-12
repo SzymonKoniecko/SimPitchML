@@ -44,37 +44,40 @@ class SimulationService:
     async def run_prediction_stream(
         self, predict_request: PredictRequest
     ) -> AsyncIterator[Tuple[str, Optional[IterationResult], int]]:
-        models: TrainedModels = None
-
-        rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
-            league_id=predict_request.league_id
-        )
-        prev_round_id_by_round_id: Dict[str, str] = Mapper.map_prev_round_id_by_round_id(
-            Mapper.map_round_no_by_round_id(rounds)
-        )
-
-        init_prediction = await self.init_prediction(
-            predict_request, rounds, prev_round_id_by_round_id
-        )
-
-        if init_prediction.list_simulation_ids:
-            models = self._xgboost_service.train_evaluate_and_save(
-                predictRequest=predict_request,
-                t_dataset=init_prediction.training_dataset,
+        try: 
+            models: TrainedModels = None
+            rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
+                league_id=predict_request.league_id
             )
-        else:
-            models = self._xgboost_service.get_evaluated_models()
-
-        counter = 0
-
-        for iteration in range(predict_request.iteration_count):
-            iteration_result = await self._xgboost_service.predict_results(
-                predict_request, init_prediction, iteration, models
+            prev_round_id_by_round_id: Dict[str, str] = Mapper.map_prev_round_id_by_round_id(
+                Mapper.map_round_no_by_round_id(rounds)
             )
-            counter += 1
 
-            # stream item
-            yield ("RUNNING", iteration_result, counter)
+            init_prediction = await self.init_prediction(
+                predict_request, rounds, prev_round_id_by_round_id
+            )
+
+            if init_prediction.list_simulation_ids:
+                models = self._xgboost_service.train_evaluate_and_save(
+                    predictRequest=predict_request,
+                    t_dataset=init_prediction.training_dataset,
+                )
+            else:
+                models = await self._xgboost_service.get_evaluated_models(predict_request)
+
+            counter = 0
+
+            for iteration in range(predict_request.iteration_count):
+                iteration_result = await self._xgboost_service.predict_results(
+                    predict_request, init_prediction, iteration, models
+                )
+                counter += 1
+
+                # stream item
+                yield ("RUNNING", iteration_result, counter)
+        except Exception:
+            logger.exception("Yield/mapper crashed")
+            raise
 
         # final event as last yield (instead of return value)
         yield ("COMPLETED", None, counter)

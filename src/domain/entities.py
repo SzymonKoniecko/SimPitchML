@@ -80,6 +80,58 @@ class IterationResult:
         ]
 
     @staticmethod
+    def from_team_strength_raw_new(data: Union[str, List[Dict[str, Any]], Dict[str, Any]]) -> List[TeamStrength]:
+        if not data:
+            return []
+
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                logger.error(f"Failed to decode TeamStrength JSON: {data[:100]}...")
+                return []
+
+        if isinstance(data, dict):
+            flattened: List[Dict[str, Any]] = []
+            for _key, value in data.items():
+                if isinstance(value, list):
+                    flattened.extend(value)
+                elif isinstance(value, dict):
+                    flattened.append(value)
+            data = flattened
+
+        if not isinstance(data, list):
+            logger.error(f"Unexpected TeamStrength payload type: {type(data)}")
+            return []
+
+        result: List[TeamStrength] = []
+        for item in data:
+            if not isinstance(item, dict):
+                continue
+
+            likelihood = item.get("Likelihood") or item.get("likelihood") or {}
+            posterior = item.get("Posterior") or item.get("posterior") or {}
+
+            result.append(
+                TeamStrength(
+                    team_id=item.get("TeamId") or item.get("team_id"),
+                    likelihood=StrengthItem(
+                        offensive=(likelihood.get("Offensive") or likelihood.get("offensive") or 1.0),
+                        defensive=(likelihood.get("Defensive") or likelihood.get("defensive") or 1.0),
+                    ),
+                    posterior=StrengthItem(
+                        offensive=(posterior.get("Offensive") or posterior.get("offensive") or 1.0),
+                        defensive=(posterior.get("Defensive") or posterior.get("defensive") or 1.0),
+                    ),
+                    expected_goals=str(item.get("ExpectedGoals") or item.get("expected_goals") or 0.0),
+                    last_update=item.get("LastUpdate") or item.get("last_update") or "N/A",
+                    round_id=item.get("RoundId") or item.get("round_id") or "",
+                )
+            )
+
+        return result
+
+    @staticmethod
     def from_sim_matches_raw(data: Union[str, List[Dict]]) -> List[MatchRound]:
         if data is None:
             return []
@@ -102,6 +154,35 @@ class IterationResult:
                 is_played=item.get("IsPlayed", True),
             )
             for item in data
+        ]
+
+    @staticmethod
+    def from_sim_matches_raw_new(data: Union[str, List[Dict[str, Any]]]) -> List[MatchRound]:
+        if data is None:
+            return []
+
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                return []
+
+        if not isinstance(data, list):
+            return []
+
+        return [
+            MatchRound(
+                id=item.get("Id") or item.get("id"),
+                round_id=item.get("RoundId") or item.get("round_id"),
+                home_team_id=item.get("HomeTeamId") or item.get("home_team_id"),
+                away_team_id=item.get("AwayTeamId") or item.get("away_team_id"),
+                home_goals=item.get("HomeGoals", 0),
+                away_goals=item.get("AwayGoals", 0),
+                is_draw=item.get("IsDraw", False),
+                is_played=item.get("IsPlayed", True),
+            )
+            for item in data
+            if isinstance(item, dict)
         ]
 
     def to_pretty_string(self) -> str:
@@ -326,6 +407,6 @@ class TrainingDataset:
 @dataclass(frozen=True)
 class InitPrediction:
     training_dataset: TrainingDataset
-    list_simulation_ids = List[str]
+    list_simulation_ids: List[str]
     prev_round_id_by_round_id: Dict[str, str]
     round_no_by_round_id: Dict[str, int]
