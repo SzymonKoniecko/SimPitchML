@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from src.domain.entities import (
     IterationResult,
@@ -136,14 +137,16 @@ class TrainingBuilder:
         prev_round_id: str,
         *,
         league_avg_strength: Optional[float] = None,
-    ) -> Optional[TeamStrength]:
+    ) -> TeamStrength:
+        
         # 1) Exact match
         exact = strength_map.get((team_id, prev_round_id))
         if exact is not None:
             return exact
 
-        # 2) LOCF: last snapshot with round_no < prev_round_no
         prev_no = round_no_by_round_id.get(prev_round_id)
+
+        # 2) LOCF: last snapshot with round_no < prev_no
         if prev_no is not None:
             best: Optional[TeamStrength] = None
             best_no: int = -1
@@ -161,11 +164,46 @@ class TrainingBuilder:
             if best is not None:
                 return best
 
-        logger.warning(f'\nLeague-average baseline used ! (TeamStrength) prev_roundId{prev_round_id} - teamId{team_id}\n')
-        # 3) League-average baseline (attack=1, defense=1 etc.)
-        league_avg_strength.team_id = team_id
-        league_avg_strength.round_id = prev_round_id
-        return league_avg_strength
+        # 3) Any snapshot for that team (fallback if no earlier one exists)
+        any_ts: Optional[TeamStrength] = None
+        any_best_no: int = -1
+
+        for (t_id, r_id), ts in strength_map.items():
+            if t_id != team_id:
+                continue
+
+            # jeśli mamy round_no, wybierz „najświeższy”
+            r_no = round_no_by_round_id.get(r_id)
+            if r_no is None:
+                # jak nie umiemy porównać, zachowaj pierwszy lepszy
+                if any_ts is None:
+                    any_ts = ts
+                continue
+
+            if r_no > any_best_no:
+                any_best_no = r_no
+                any_ts = ts
+
+        if any_ts is not None:
+            return any_ts
+
+        # 4) League-average baseline (gdy nie ma żadnego TeamStrength)
+        avg = league_avg_strength if league_avg_strength is not None else 1.0
+
+        logger.warning(
+            "League-average baseline used (no TeamStrength found). team_id=%s prev_round_id=%s avg=%s",
+            team_id, prev_round_id, avg
+        )
+
+        return TeamStrength.league_average_baseline(
+            team_id=team_id,
+            round_id=prev_round_id,
+            offensive=float(avg),
+            defensive=float(avg),
+            last_update=datetime.utcnow().isoformat(),
+            expected_goals="N/A",
+        )
+
 
     @staticmethod
     def build_single_training_data(

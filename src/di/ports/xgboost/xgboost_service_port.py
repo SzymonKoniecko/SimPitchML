@@ -25,12 +25,13 @@ class XgboostServicePort(Protocol):
         predictRequest: PredictRequest,
         init_prediction: InitPrediction,
         iteration_index: int,
-        models: TrainedModels,
+        models: TrainedModels
     ) -> IterationResult: ...
     async def predict_single_result(
+        self,
         match_round: MatchRound,
         home_strength: Optional[TeamStrength],
         away_strength: Optional[TeamStrength],
         prev_round_id: str,
-        models: TrainedModels,
+        models: TrainedModels
     ) -> Tuple[MatchRound, Tuple[TeamStrength, TeamStrength]]: ...

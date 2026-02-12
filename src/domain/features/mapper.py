@@ -2,10 +2,12 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 
 from src.domain.entities import IterationResult, LeagueRound, TrainingData
-from src.generatedSimulationProtos.SimulationService import (
-    commonTypes_pb2 as commonTypes_SimulationService,
+from src.generatedSimPitchMlProtos.SimPitchMl import (
+    commonTypes_pb2 as commonTypes_SimPitchMl,
 )
-from src.generatedSimPitchMlProtos.SimPitchMl.Predict import responses_pb2 as responses_pb2_SimPitchMl
+from src.generatedSimPitchMlProtos.SimPitchMl.Predict import (
+    responses_pb2 as responses_pb2_SimPitchMl,
+)
 
 GUID_EMPTY = "00000000-0000-0000-0000-000000000000"
 
@@ -100,18 +102,22 @@ class Mapper:
     @staticmethod
     def map_iteration_result_to_proto(
         iteration_result: IterationResult,
-    ) -> commonTypes_SimulationService.IterationResultGrpc:
-        grpc_object = commonTypes_SimulationService.IterationResultGrpc(
-            id=iteration_result.id,
-            simulation_id=iteration_result.simulation_id,
-            # iteration_index = iteration_result.iteration_index, SimulationService will add proper one
-            start_date=iteration_result.start_date,
-            execution_time=iteration_result.execution_time,
+    ) -> commonTypes_SimPitchMl.IterationResultGrpc:
+        grpc_object = commonTypes_SimPitchMl.IterationResultGrpc(
+            id=str(iteration_result.id) if iteration_result.id is not None else "",
+            simulation_id=(
+                str(iteration_result.simulation_id)
+                if iteration_result.simulation_id is not None
+                else ""
+            ),
+            iteration_index=0, # SimulationService will handle this
+            start_date=str(iteration_result.start_date or ""),
+            execution_time=str(iteration_result.execution_time or ""),
             team_strengths=IterationResult.team_strengths_to_json_value(
-                iteration_result.team_strengths
+                iteration_result.team_strengths or []
             ),
             simulated_match_rounds=IterationResult.simulated_match_rounds_to_json_value(
-                iteration_result.simulated_match_rounds
+                iteration_result.simulated_match_rounds or []
             ),
         )
         return grpc_object

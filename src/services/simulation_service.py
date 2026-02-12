@@ -44,13 +44,15 @@ class SimulationService:
     async def run_prediction_stream(
         self, predict_request: PredictRequest
     ) -> AsyncIterator[Tuple[str, Optional[IterationResult], int]]:
-        try: 
+        try:
             models: TrainedModels = None
             rounds = await self._sportsdata_service.get_league_rounds_by_league_id(
                 league_id=predict_request.league_id
             )
-            prev_round_id_by_round_id: Dict[str, str] = Mapper.map_prev_round_id_by_round_id(
-                Mapper.map_round_no_by_round_id(rounds)
+            prev_round_id_by_round_id: Dict[str, str] = (
+                Mapper.map_prev_round_id_by_round_id(
+                    Mapper.map_round_no_by_round_id(rounds)
+                )
             )
 
             init_prediction = await self.init_prediction(
@@ -58,12 +60,14 @@ class SimulationService:
             )
 
             if init_prediction.list_simulation_ids:
-                models = self._xgboost_service.train_evaluate_and_save(
+                models = await self._xgboost_service.train_evaluate_and_save(
                     predictRequest=predict_request,
                     t_dataset=init_prediction.training_dataset,
                 )
             else:
-                models = await self._xgboost_service.get_evaluated_models(predict_request)
+                models = await self._xgboost_service.get_evaluated_models(
+                    predict_request
+                )
 
             counter = 0
 
@@ -90,6 +94,8 @@ class SimulationService:
     ) -> InitPrediction:
 
         list_simulation_ids = await self.get_pending_simulations_to_sync()
+        if predict_request.simulation_id in list_simulation_ids:
+            list_simulation_ids.remove(predict_request.simulation_id) # do not use currently proceeded simulation
 
         all_match_rounds = (
             await self._sportsdata_service.get_match_rounds_by_league_rounds(rounds)
@@ -98,10 +104,12 @@ class SimulationService:
 
         if list_simulation_ids is not None and len(list_simulation_ids) != 0:
             for sim_id in list_simulation_ids:
-                iteration_results = await self.run_get_iterationResults_by_simulationId(
-                    simulation_id=sim_id
-                ).items
-                for it_result in iteration_results:
+                paged_iteration_results = (
+                    await self.run_get_iterationResults_by_simulationId(
+                        simulation_id=sim_id
+                    )
+                )
+                for it_result in paged_iteration_results.items:
                     tmp_dataset = TrainingBuilder.build_dataset(
                         iteration_result=it_result,
                         league_rounds=rounds,

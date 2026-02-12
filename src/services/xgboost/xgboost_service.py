@@ -38,6 +38,7 @@ class XgboostService:
 
     def _create_model(self, seed: Optional[int]) -> xgb.XGBRegressor:
         params = dict(BASE_PARAMS)
+        logger.info(f' \n CREATED [XGBOOST MODEL] FOR SEED {seed} \n')
         if seed is not None:
             params["random_state"] = seed
         return xgb.XGBRegressor(**params)
@@ -155,9 +156,11 @@ class XgboostService:
                 prev_round_id,
                 league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7) or 1.7,
             )
-            predicted_match_round, predicted_team_strength = await self.predict_single_result(match_round, home_strength, away_strength, prev_round_id, models)
+            predicted_match_round, (predicted_home_ts, predicted_away_ts) = await self.predict_single_result(match_round, home_strength, away_strength, prev_round_id, models)
             iteration_result.simulated_match_rounds.append(predicted_match_round)
-            strength_map = TeamStrength.add_to_strength_map(strength_map, predicted_team_strength)
+
+            strength_map = TeamStrength.add_to_strength_map(strength_map, predicted_home_ts)
+            strength_map = TeamStrength.add_to_strength_map(strength_map, predicted_away_ts)
 
 
         end_execution_time = perf_counter()
@@ -167,11 +170,12 @@ class XgboostService:
         return iteration_result
 
     async def predict_single_result(
+        self,
         match_round: MatchRound,
         home_strength: Optional[TeamStrength],
         away_strength: Optional[TeamStrength],
         prev_round_id: str,
-        models: TrainedModels,
+        models: TrainedModels
     ) -> Tuple[MatchRound, Tuple[TeamStrength, TeamStrength]]:
         """
         Predykuje wynik pojedynczego MatchRound i zwraca wypełniony obiekt + nowe TeamStrength.
@@ -195,8 +199,8 @@ class XgboostService:
 
         x_predict = Mapper.map_to_x_matrix([x_row], models.feature_schema)
 
-        pred_home_goals = models.home.predict(x_predict)[0]  # float
-        pred_away_goals = models.away.predict(x_predict)[0]  # float
+        pred_home_goals = float(models.home.predict(x_predict)[0])
+        pred_away_goals = float(models.away.predict(x_predict)[0])
 
         # Post-process (clamp + round)
         MAX_GOALS = 15
