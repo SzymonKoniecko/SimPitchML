@@ -19,7 +19,7 @@ class PredictServiceServicer(service_pb2_grpc.PredictServiceServicer):
             domain_req = PredictRequest(
                 simulation_id=grpc_data.simulation_id,
                 league_id=grpc_data.league_id,
-                team_strengths=IterationResult.from_team_strength_raw_new(json.loads(grpc_data.team_strengths or "[]")),
+                team_strengths=IterationResult.from_team_strength_raw_dict(json.loads(grpc_data.team_strengths or "[]")),
                 matches_to_simulate=IterationResult.from_sim_matches_raw_new(json.loads(grpc_data.matches_to_simulate or "[]")),
                 train_until_round_no=grpc_data.train_until_round_no,
                 iteration_count=grpc_data.iteration_count,

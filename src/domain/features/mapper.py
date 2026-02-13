@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional, Tuple
+import uuid
 import pandas as pd
 
 from src.domain.entities import IterationResult, LeagueRound, TrainingData
@@ -37,7 +38,7 @@ class Mapper:
         prev_by_id: Dict[str, str] = {}
 
         for round_id, round_no in rounds.items():
-            prev_round_id = id_by_no.get(round_no - 1, None)
+            prev_round_id = id_by_no.get(round_no - 1, uuid.UUID(int=0))
             prev_by_id[round_id] = prev_round_id
 
         return prev_by_id

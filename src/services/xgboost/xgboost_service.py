@@ -142,7 +142,7 @@ class XgboostService:
         strength_map = TeamStrength.strength_map(predictRequest.team_strengths)
         for match_round in predictRequest.matches_to_simulate:
             prev_round_id = init_prediction.prev_round_id_by_round_id.get(
-                match_round.round_id, None
+                match_round.round_id, tu_cos_dla_pierwszeog
             )
             home_strength = TrainingBuilder.get_strength_or_fallback(
                 strength_map,

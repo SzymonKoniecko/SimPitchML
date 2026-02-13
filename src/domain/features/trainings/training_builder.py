@@ -125,7 +125,7 @@ class TrainingBuilder:
 
     @staticmethod
     def get_strength_or_fallback(
-        strength_map: Dict[Tuple[str, str], TeamStrength],
+        strength_map: Dict[Tuple[str, str], List[TeamStrength]],
         round_no_by_round_id: Dict[str, int],
         team_id: str,
         prev_round_id: str,
@@ -138,64 +138,20 @@ class TrainingBuilder:
         if exact is not None:
             return exact
 
-        prev_no = round_no_by_round_id.get(prev_round_id)
-
-        # 2) LOCF: last snapshot with round_no < prev_no
-        if prev_no is not None:
-            best: Optional[TeamStrength] = None
-            best_no: int = -1
-
-            for (t_id, r_id), ts in strength_map.items():
-                if t_id != team_id:
-                    continue
-                r_no = round_no_by_round_id.get(r_id)
-                if r_no is None:
-                    continue
-                if r_no < prev_no and r_no > best_no:
-                    best_no = r_no
-                    best = ts
-
-            if best is not None:
-                return best
-
-        # 3) Any snapshot for that team (fallback if no earlier one exists)
-        any_ts: Optional[TeamStrength] = None
-        any_best_no: int = -1
-
-        for (t_id, r_id), ts in strength_map.items():
-            if t_id != team_id:
-                continue
-
-            # jeśli mamy round_no, wybierz „najświeższy”
-            r_no = round_no_by_round_id.get(r_id)
-            if r_no is None:
-                # jak nie umiemy porównać, zachowaj pierwszy lepszy
-                if any_ts is None:
-                    any_ts = ts
-                continue
-
-            if r_no > any_best_no:
-                any_best_no = r_no
-                any_ts = ts
-
-        if any_ts is not None:
-            return any_ts
-
-        # 4) League-average baseline (gdy nie ma żadnego TeamStrength)
-        avg = league_avg_strength if league_avg_strength is not None else 1.0
+        #USELESS prev_no = round_no_by_round_id.get(prev_round_id)
 
         logger.warning(
             "League-average baseline used (no TeamStrength found). team_id=%s prev_round_id=%s avg=%s",
             team_id,
             prev_round_id,
-            avg,
+            league_avg_strength,
         )
 
         return TeamStrength.get_team_strength_average_baseline(
             team_id=team_id,
             round_id=prev_round_id,
-            offensive=float(avg),
-            defensive=float(avg),
+            offensive=float(league_avg_strength),
+            defensive=float(league_avg_strength),
             last_update=datetime.utcnow().isoformat(),
             expected_goals="N/A",
         )

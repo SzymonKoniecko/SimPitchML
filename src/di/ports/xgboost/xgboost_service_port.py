@@ -33,5 +33,6 @@ class XgboostServicePort(Protocol):
         home_strength: Optional[TeamStrength],
         away_strength: Optional[TeamStrength],
         prev_round_id: str,
+        predictRequest: PredictRequest,
         models: TrainedModels
     ) -> Tuple[MatchRound, Tuple[TeamStrength, TeamStrength]]: ...
