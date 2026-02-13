@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
-from typing import Any, Dict, Generic, Iterable, Optional, Tuple, TypeVar, List, Union
+from collections import defaultdict
+from dataclasses import dataclass, asdict, field, replace
+from typing import Any, DefaultDict, Dict, Generic, Iterable, Optional, Tuple, TypeVar, List, Union
 import json
 
 
@@ -38,50 +39,18 @@ class IterationResult:
         """Convert List[TeamStrength] to JSON string."""
         # asdict rekurencyjnie konwertuje nested dataclasses na dict
         dict_list = [asdict(ts) for ts in team_strengths]
-        return json.dumps(dict_list, indent=2) 
+        return json.dumps(dict_list, indent=2)
+
     @staticmethod
     def simulated_match_rounds_to_json_value(match_rounds: List[MatchRound]) -> str:
         """Convert List[MatchRound] to JSON string."""
         dict_list = [asdict(mr) for mr in match_rounds]
-        return json.dumps(dict_list, indent=2) 
+        return json.dumps(dict_list, indent=2)
 
     @staticmethod
-    def from_team_strength_raw(data: Union[str, List[Dict]]) -> List[TeamStrength]:
-        if data is None:
-            return []
-
-        if isinstance(data, str):
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError:
-                logger.error(
-                    f"Failed to decode TeamStrength JSON: {data[:100]}..."
-                )  # Log snippet only
-                return []
-
-        return [
-            TeamStrength(
-                team_id=item.get("TeamId") or item.get("team_id"),
-                
-                    likelihood=StrengthItem(
-                        offensive=(likelihood.get("Offensive") or likelihood.get("offensive") or likelihood.get("Item1") or 1.0),
-                        defensive=(likelihood.get("Defensive") or likelihood.get("defensive") or likelihood.get("Item2") or 1.0),
-                    ),
-                    posterior=StrengthItem(
-                        offensive=(posterior.get("Offensive") or posterior.get("offensive") or likelihood.get("Item1") or 1.0),
-                        defensive=(posterior.get("Defensive") or posterior.get("defensive") or likelihood.get("Item2") or 1.0),
-                    ),
-                expected_goals=str(
-                    item.get("ExpectedGoals", 0.0)
-                ),  # Safe access + string conversion
-                last_update=item["LastUpdate"],
-                round_id=item.get("RoundId") or item.get("round_id"),
-            )
-            for item in data
-        ]
-
-    @staticmethod
-    def from_team_strength_raw_new(data: Union[str, List[Dict[str, Any]], Dict[str, Any]]) -> List[TeamStrength]:
+    def from_team_strength_raw_list(
+        data: Union[str, List[Dict[str, Any]], Dict[str, Any]],
+    ) -> List[TeamStrength]:
         if not data:
             return []
 
@@ -92,11 +61,12 @@ class IterationResult:
                 logger.error(f"Failed to decode TeamStrength JSON: {data[:100]}...")
                 return []
 
+        # Dict[str, List[...]] -> flatten
         if isinstance(data, dict):
             flattened: List[Dict[str, Any]] = []
             for _key, value in data.items():
                 if isinstance(value, list):
-                    flattened.extend(value)
+                    flattened.extend([v for v in value if isinstance(v, dict)])
                 elif isinstance(value, dict):
                     flattened.append(value)
             data = flattened
@@ -113,52 +83,71 @@ class IterationResult:
             likelihood = item.get("Likelihood") or item.get("likelihood") or {}
             posterior = item.get("Posterior") or item.get("posterior") or {}
 
-            result.append(
-                TeamStrength(
-                    team_id=item.get("TeamId") or item.get("team_id"),
-                    likelihood=StrengthItem(
-                        offensive=(likelihood.get("Offensive") or likelihood.get("offensive") or likelihood.get("Item1") or 1.0),
-                        defensive=(likelihood.get("Defensive") or likelihood.get("defensive") or likelihood.get("Item2") or 1.0),
+            ts = TeamStrength(
+                team_id=item.get("TeamId") or item.get("team_id") or "",
+                likelihood=StrengthItem(
+                    offensive=float(
+                        likelihood.get("Offensive")
+                        or likelihood.get("offensive")
+                        or likelihood.get("Item1")
+                        or 1.0
                     ),
-                    posterior=StrengthItem(
-                        offensive=(posterior.get("Offensive") or posterior.get("offensive") or likelihood.get("Item1") or 1.0),
-                        defensive=(posterior.get("Defensive") or posterior.get("defensive") or likelihood.get("Item2") or 1.0),
+                    defensive=float(
+                        likelihood.get("Defensive")
+                        or likelihood.get("defensive")
+                        or likelihood.get("Item2")
+                        or 1.0
                     ),
-                    expected_goals=str(item.get("ExpectedGoals") or item.get("expected_goals") or 0.0),
-                    last_update=item.get("LastUpdate") or item.get("last_update") or "N/A",
-                    round_id=item.get("RoundId") or item.get("round_id") or None,
-                )
+                ),
+                posterior=StrengthItem(
+                    offensive=float(
+                        posterior.get("Offensive")
+                        or posterior.get("offensive")
+                        or posterior.get("Item1")
+                        or 1.0
+                    ),
+                    defensive=float(
+                        posterior.get("Defensive")
+                        or posterior.get("defensive")
+                        or posterior.get("Item2")
+                        or 1.0
+                    ),
+                ),
+                expected_goals=str(
+                    item.get("ExpectedGoals") or item.get("expected_goals") or 0.0
+                ),
+                last_update=item.get("LastUpdate") or item.get("last_update") or "N/A",
+                round_id=item.get("RoundId") or item.get("round_id") or "",
+                season_stats=SeasonStats.map_from_grpc(item),
             )
+
+            # opcjonalnie: pomiń jeśli brak team_id
+            if not ts.team_id:
+                continue
+
+            result.append(ts)
 
         return result
 
     @staticmethod
-    def from_sim_matches_raw(data: Union[str, List[Dict]]) -> List[MatchRound]:
-        if data is None:
-            return []
+    def from_team_strength_raw_dict(
+        data: Union[str, List[Dict[str, Any]], Dict[str, Any]],
+    ) -> Dict[str, List[TeamStrength]]:
+        # 1) użyj Twojej logiki parsowania -> List[TeamStrength]
+        item_list: List[TeamStrength] = IterationResult.from_team_strength_raw_list(data)
 
-        if isinstance(data, str):
-            try:
-                data = json.loads(data)
-            except json.JSONDecodeError:
-                return []
+        grouped: DefaultDict[str, List[TeamStrength]] = defaultdict(list)
+        for ts in item_list:
+            if not ts.team_id:
+                continue
+            grouped[ts.team_id].append(ts)
 
-        return [
-            MatchRound(
-                id=item.get("Id") or item.get("id"),
-                round_id=item.get("RoundId") or item.get("round_id"),
-                home_team_id=item.get("HomeTeamId") or item.get("home_team_id"),
-                away_team_id=item.get("AwayTeamId") or item.get("away_team_id"),
-                home_goals=item.get("HomeGoals", 0),
-                away_goals=item.get("AwayGoals", 0),
-                is_draw=item.get("IsDraw", False),
-                is_played=item.get("IsPlayed", True),
-            )
-            for item in data
-        ]
+        return dict(grouped)
 
     @staticmethod
-    def from_sim_matches_raw_new(data: Union[str, List[Dict[str, Any]]]) -> List[MatchRound]:
+    def from_sim_matches_raw_new(
+        data: Union[str, List[Dict[str, Any]]],
+    ) -> List[MatchRound]:
         if data is None:
             return []
 
@@ -186,6 +175,7 @@ class IterationResult:
             if isinstance(item, dict)
         ]
 
+    @staticmethod
     def to_pretty_string(self) -> str:
         import dataclasses
         import json
@@ -215,7 +205,7 @@ class LeagueRound:
     round: int
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class StrengthItem:
     offensive: float
     defensive: float
@@ -229,99 +219,246 @@ class TeamStrength:
     expected_goals: str
     last_update: str
     round_id: str
-    # season_stats: int
+    season_stats: SeasonStats = field(
+        default_factory=lambda: SeasonStats.empty(team_id="N/A")
+    )
+    # ^ default_factory
 
     @staticmethod
     def strength_map(
-        items: Iterable["TeamStrength"],
-    ) -> Dict[Tuple[str, str], "TeamStrength"]:
-        return {(ts.team_id, ts.round_id): ts for ts in items}
-    
+        items: Dict[str, List[TeamStrength]],
+    ) -> Dict[Tuple[str, str], TeamStrength]:
+        return {
+            (ts.team_id, ts.round_id): ts
+            for team_strengths in items.values()
+            for ts in team_strengths
+        }
+
     @staticmethod
     def add_to_strength_map(
         strength_map: Dict[Tuple[str, str], "TeamStrength"],
         ts: "TeamStrength",
     ) -> Dict[Tuple[str, str], "TeamStrength"]:
-        """
-        Dodaje nowy TeamStrength do istniejącej mapy (strength_map).
-        
-        - Jeśli klucz (team_id, round_id) już istnieje → **nadpisuje** (nowsze dane).
-        - Zwraca nową mapę (nie mutuje oryginalnej).
-        
-        Przykład:
-            map = TeamStrength.strength_map([ts1])
-            new_map = TeamStrength.add_to_strength_map(map, ts2)
-        
-        Użycia:
-        - Incremental update mapy przy synchronizacji nowych IterationResult.
-        - Ładowanie nowych TeamStrength z gRPC i dołączanie do istniejącej mapy.
-        """
+        if not isinstance(ts, TeamStrength):
+            raise TypeError(f"Expected TeamStrength, got {type(ts).__name__}")
+
         key = (ts.team_id, ts.round_id)
-        new_map = dict(strength_map)  # shallow copy (bezpieczne)
+        new_map = dict(strength_map)
         new_map[key] = ts
         return new_map
 
     @classmethod
     def merge_strength_maps(
-        cls,
-        *maps: Dict[Tuple[str, str], "TeamStrength"],
+        cls, *maps: Dict[Tuple[str, str], "TeamStrength"]
     ) -> Dict[Tuple[str, str], "TeamStrength"]:
-        """
-        Łączy wiele map (np. z różnych IterationResult).
-        
-        - Ostatnia mapa ma najwyższy priorytet (nadpisuje wcześniejsze).
-        - Zwraca nową mapę.
-        
-        Przykład:
-            map1 = strength_map_from_iter1
-            map2 = strength_map_from_iter2
-            combined = TeamStrength.merge_strength_maps(map1, map2)
-        """
-        combined = {}
-        for strength_map in maps:
-            combined.update(strength_map)  # update nadpisuje duplikaty
+        combined: Dict[Tuple[str, str], TeamStrength] = {}
+        for m in maps:
+            combined.update(m)
         return combined
-    
-    @staticmethod
-    def strength_map_to_list(
-        strength_map: Dict[Tuple[str, str], "TeamStrength"]
-    ) -> List["TeamStrength"]:
-        """
-        Konwertuje mapę (dict) z powrotem na listę TeamStrength.
-        
-        Zwraca **te same obiekty** (shallow), ale w **nieokreślonej kolejności** (dict order).
-        
-        Przykład:
-            mapa = strength_map_from_iteration
-            lista = TeamStrength.strength_map_to_list(mapa)
-        """
-        return list(strength_map.values())
+
+    # @staticmethod
+    # def strength_map_to_list(strength_map: Dict[Tuple[str, str], "TeamStrength"]) -> List###["TeamStrength"]:
+    #     return list(strength_map.values())
 
     @staticmethod
     def get_team_strength_average_baseline(
-        *,
         round_id: str = "LEAGUE_AVG",
         last_update: str = "2001-01-01T22:00:00.000000",
         expected_goals: str = "N/A",
         offensive: float = 1.0,
         defensive: float = 1.0,
         team_id: str = "LEAGUE_AVG",
+        season_year: str = "N/A",
+        league_id: str = "N/A",
+        league_strength: float = 1.0,
     ) -> "TeamStrength":
-        # Baseline: neutralna drużyna = średnia ligowa (1.0, 1.0)
         return TeamStrength(
             team_id=team_id,
-            likelihood=StrengthItem(offensive=offensive, defensive=defensive),
-            posterior=StrengthItem(offensive=offensive, defensive=defensive),
+            likelihood=StrengthItem(
+                offensive=float(offensive), defensive=float(defensive)
+            ),
+            posterior=StrengthItem(
+                offensive=float(offensive), defensive=float(defensive)
+            ),
             expected_goals=expected_goals,
             last_update=last_update,
             round_id=round_id,
+            season_stats=SeasonStats.empty(
+                team_id=team_id,
+                season_year=season_year,
+                league_id=league_id,
+                league_strength=league_strength,
+            ),
         )
 
+    def SetLikelihood(self)-> "TeamStrength":
+        if self.season_stats.matches_played == 0:
+            raise TypeError(f"Expected matches_played > 0, got {type(self).__name__}")
+        
+        new_likelihood = StrengthItem(
+            offensive=self.season_stats.goals_for / self.season_stats.matches_played,
+            defensive=self.season_stats.goals_against / self.season_stats.matches_played
+        )
+        self.likelihood = replace(self, likelihood=new_likelihood)
+        return self
 
-# @dataclass(frozen=True)
-# class SeasonStats:
-#     offensive: float
-#     defensive: float
+    def SetPosterior(self, games_to_reach_trust: int, league_strength: float)-> "TeamStrength":
+        if games_to_reach_trust <= 0:
+            raise ValueError("games_to_reach_trust must be greater than zero.")
+
+        beta_0 = float(games_to_reach_trust)
+
+        updated_league_strength = (float(league_strength) + float(self.season_stats.league_strength)) / 2.0
+
+        alpha_0 = beta_0 * updated_league_strength
+
+        posterior_alpha_off = alpha_0 + float(self.season_stats.goals_for)
+        posterior_alpha_def = alpha_0 + float(self.season_stats.goals_against)
+        posterior_beta = beta_0 + float(self.season_stats.matches_played)
+
+        if posterior_beta <= 0:
+            raise ValueError(f"posterior_beta must be > 0, got {posterior_beta}")
+
+        posterior = StrengthItem(
+            offensive=posterior_alpha_off / posterior_beta,
+            defensive=posterior_alpha_def / posterior_beta,
+        )
+
+        new_stats = replace(self.season_stats, league_strength=updated_league_strength)
+
+        self.posterior = posterior
+        self.season_stats = new_stats
+
+        self.expected_goals = str(posterior.offensive)
+
+        return self
+    
+    def SetExpectedGoalsFromPosterior(self) -> float:
+        if self.posterior.offensive == 0:
+            return self.expected_goals
+        return self.posterior.offensive
+
+
+@dataclass(frozen=False)
+class SeasonStats:
+    id: str
+    team_id: str
+    season_year: str
+    league_id: str
+    league_strength: float
+    matches_played: int
+    wins: int
+    losses: int
+    draws: int
+    goals_for: int
+    goals_against: int
+
+    @staticmethod
+    def empty(
+        *,
+        team_id: str,
+        season_year: str = "N/A",
+        league_id: str = "N/A",
+        league_strength: float = 1.0,
+        id: str = "N/A",
+    ) -> "SeasonStats":
+        return SeasonStats(
+            id=id,
+            team_id=team_id,
+            season_year=season_year,
+            league_id=league_id,
+            league_strength=league_strength,
+            matches_played=0,
+            wins=0,
+            losses=0,
+            draws=0,
+            goals_for=0,
+            goals_against=0,
+        )
+
+    @staticmethod
+    def map_from_grpc(item: Any) -> "SeasonStats":
+        return SeasonStats(
+            id=item.get("Id"),
+            team_id=item.get("TeamId"),
+            season_year=item.get("SeasonYear"),
+            league_id=item.get("LeagueId"),
+            league_strength=item.get("LeagueStrength"),
+            matches_played=item.get("MatchesPlayed"),
+            wins=item.get("Wins"),
+            losses=item.get("Losses"),
+            draws=item.get("Draws"),
+            goals_for=item.get("GoalsFor"),
+            goals_against=item.get("GoalsAgainst"),
+        )
+
+    def increment(self, match_round: MatchRound, is_home_team: bool) -> "SeasonStats":
+        if match_round.home_goals is None or match_round.away_goals is None:
+            raise ValueError(
+                f"Home goals or away goals are null!! MatchRoundId:{match_round.id}"
+            )
+
+        matches_played = self.matches_played + 1
+        wins, losses, draws = self.wins, self.losses, self.draws
+        goals_for, goals_against = self.goals_for, self.goals_against
+
+        if is_home_team:
+            if match_round.home_goals > match_round.away_goals:
+                wins += 1
+            elif match_round.home_goals < match_round.away_goals:
+                losses += 1
+            else:
+                draws += 1
+            goals_for += match_round.home_goals
+            goals_against += match_round.away_goals
+        else:
+            if match_round.home_goals > match_round.away_goals:
+                losses += 1
+            elif match_round.home_goals < match_round.away_goals:
+                wins += 1
+            else:
+                draws += 1
+            goals_for += match_round.away_goals
+            goals_against += match_round.home_goals
+
+        return SeasonStats(
+            id=self.id,
+            team_id=self.team_id,
+            season_year=self.season_year,
+            league_id=self.league_id,
+            league_strength=self.league_strength,
+            matches_played=matches_played,
+            wins=wins,
+            losses=losses,
+            draws=draws,
+            goals_for=goals_for,
+            goals_against=goals_against,
+        )
+
+    @staticmethod
+    def merge(accumulator: "SeasonStats", new_data: "SeasonStats") -> "SeasonStats":
+        if accumulator.team_id != new_data.team_id:
+            raise ValueError(
+                f"Cannot merge SeasonStats for different teams: {accumulator.team_id} != {new_data.team_id}"
+            )
+
+        new_league_strength = (
+            accumulator.league_strength + new_data.league_strength
+        ) / 2.0
+
+        return SeasonStats(
+            id=new_data.id,
+            team_id=new_data.team_id,
+            season_year=new_data.season_year,
+            league_id=new_data.league_id,
+            league_strength=new_league_strength,
+            matches_played=accumulator.matches_played + new_data.matches_played,
+            wins=accumulator.wins + new_data.wins,
+            losses=accumulator.losses + new_data.losses,
+            draws=accumulator.draws + new_data.draws,
+            goals_for=accumulator.goals_for + new_data.goals_for,
+            goals_against=accumulator.goals_against + new_data.goals_against,
+        )
 
 
 @dataclass(frozen=True)
@@ -384,13 +521,14 @@ class PredictRequest:
     simulation_id: str
     league_id: str
     iteration_count: int
-    team_strengths: List[TeamStrength]
+    team_strengths: Dict[str, List[TeamStrength]]
     matches_to_simulate: List[MatchRound]
     train_until_round_no: int
-    
     league_avg_strength: Optional[float] = None
     seed: Optional[int] = None
     train_ratio: Optional[float] = None
+    games_to_reach_trust: Optional[int] = None
+
 
 @dataclass(frozen=True)
 class TrainedModels:

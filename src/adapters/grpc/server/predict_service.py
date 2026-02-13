@@ -26,6 +26,7 @@ class PredictServiceServicer(service_pb2_grpc.PredictServiceServicer):
                 league_avg_strength=getattr(grpc_data, "league_avg_strength"),
                 seed=getattr(grpc_data, "seed"),
                 train_ratio=getattr(grpc_data, "train_ratio"),
+                games_to_reach_trust=getattr(grpc_data, "games_to_reach_trust")
             )
 
             async for status, iteration_result, counter in self._simulation_service.run_prediction_stream(domain_req):

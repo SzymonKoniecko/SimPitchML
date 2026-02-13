@@ -135,7 +135,7 @@ class XgboostService:
             iteration_index=iteration_index,
             start_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             execution_time="",
-            team_strengths=None,
+            team_strengths=[],
             simulated_match_rounds=None,
         )
         iteration_result.simulated_match_rounds = []
@@ -160,7 +160,7 @@ class XgboostService:
             )
             predicted_match_round, (predicted_home_ts, predicted_away_ts) = (
                 await self.predict_single_result(
-                    match_round, home_strength, away_strength, prev_round_id, models
+                    match_round, home_strength, away_strength, prev_round_id, predictRequest, models
                 )
             )
             iteration_result.simulated_match_rounds.append(predicted_match_round)
@@ -188,6 +188,7 @@ class XgboostService:
         home_strength: Optional[TeamStrength],
         away_strength: Optional[TeamStrength],
         prev_round_id: str,
+        predictRequest: PredictRequest,
         models: TrainedModels,
     ) -> Tuple[MatchRound, Tuple[TeamStrength, TeamStrength]]:
         """
@@ -228,31 +229,12 @@ class XgboostService:
         match_round.is_draw = home_goals == away_goals
         match_round.is_played = True
 
-        # TeamStrength (aktualizacja po meczu)  NAPRAW UZYWAJAC KONREKTNYCH WZOROW Z SIMULATION_SERVICE
-        team_strength_home = TeamStrength(
-            team_id=match_round.home_team_id,
-            likelihood=StrengthItem(
-                offensive=pred_home_goals, defensive=pred_away_goals
-            ),  # form
-            posterior=StrengthItem(
-                offensive=pred_home_goals, defensive=pred_away_goals
-            ),  # long-term form
-            expected_goals=str(pred_home_goals),
-            last_update="2026-02-10",  # current timestamp
-            round_id=match_round.round_id,  # stan PO tym meczu
-        )
+        team_strength_home = home_strength.SetLikelihood()
+        team_strength_home.SetPosterior(games_to_reach_trust=predictRequest.games_to_reach_trust, league_strength=predictRequest.league_avg_strength)
+        team_strength_home.SetExpectedGoalsFromPosterior()
 
-        team_strength_away = TeamStrength(
-            team_id=match_round.away_team_id,
-            likelihood=StrengthItem(
-                offensive=pred_away_goals, defensive=pred_home_goals
-            ),
-            posterior=StrengthItem(
-                offensive=pred_away_goals, defensive=pred_home_goals
-            ),
-            expected_goals=str(pred_away_goals),
-            last_update="2026-02-10",
-            round_id=match_round.round_id,
-        )
+        team_strength_away = away_strength.SetLikelihood()
+        team_strength_away.SetPosterior(games_to_reach_trust=predictRequest.games_to_reach_trust, league_strength=predictRequest.league_avg_strength)
+        team_strength_away.SetExpectedGoalsFromPosterior()
 
         return match_round, (team_strength_home, team_strength_away)
