@@ -2,7 +2,18 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, asdict, field, replace
-from typing import Any, DefaultDict, Dict, Generic, Iterable, Optional, Tuple, TypeVar, List, Union
+from typing import (
+    Any,
+    DefaultDict,
+    Dict,
+    Generic,
+    Iterable,
+    Optional,
+    Tuple,
+    TypeVar,
+    List,
+    Union,
+)
 import json
 
 
@@ -134,7 +145,9 @@ class IterationResult:
         data: Union[str, List[Dict[str, Any]], Dict[str, Any]],
     ) -> Dict[str, List[TeamStrength]]:
         # 1) użyj Twojej logiki parsowania -> List[TeamStrength]
-        item_list: List[TeamStrength] = IterationResult.from_team_strength_raw_list(data)
+        item_list: List[TeamStrength] = IterationResult.from_team_strength_raw_list(
+            data
+        )
 
         grouped: DefaultDict[str, List[TeamStrength]] = defaultdict(list)
         for ts in item_list:
@@ -291,52 +304,52 @@ class TeamStrength:
             ),
         )
 
-    def SetLikelihood(self)-> "TeamStrength":
-        if self.season_stats.matches_played == 0:
-            raise TypeError(f"Expected matches_played > 0, got {type(self).__name__}")
-        
-        new_likelihood = StrengthItem(
-            offensive=self.season_stats.goals_for / self.season_stats.matches_played,
-            defensive=self.season_stats.goals_against / self.season_stats.matches_played
-        )
-        self.likelihood = replace(self, likelihood=new_likelihood)
-        return self
+    def with_round_meta(self, round_id: str, last_update: str) -> "TeamStrength":
+        return replace(self, round_id=round_id, last_update=last_update)
 
-    def SetPosterior(self, games_to_reach_trust: int, league_strength: float)-> "TeamStrength":
+    def with_incremented_stats(
+        self, match_round: MatchRound, is_home_team: bool
+    ) -> "TeamStrength":
+        return replace(
+            self, season_stats=self.season_stats.incremented(match_round, is_home_team)
+        )
+
+    def with_likelihood(self) -> "TeamStrength":
+        if self.season_stats.matches_played == 0:
+            raise ValueError("Cannot calculate likelihood without matches played.")
+        like = StrengthItem(
+            offensive=self.season_stats.goals_for / self.season_stats.matches_played,
+            defensive=self.season_stats.goals_against
+            / self.season_stats.matches_played,
+        )
+        return replace(self, likelihood=like)
+
+    def with_posterior(
+        self, games_to_reach_trust: int, league_strength: float
+    ) -> "TeamStrength":
         if games_to_reach_trust <= 0:
             raise ValueError("games_to_reach_trust must be greater than zero.")
 
         beta_0 = float(games_to_reach_trust)
-
-        updated_league_strength = (float(league_strength) + float(self.season_stats.league_strength)) / 2.0
-
+        updated_league_strength = (
+            float(league_strength) + float(self.season_stats.league_strength)
+        ) / 2.0
         alpha_0 = beta_0 * updated_league_strength
 
-        posterior_alpha_off = alpha_0 + float(self.season_stats.goals_for)
-        posterior_alpha_def = alpha_0 + float(self.season_stats.goals_against)
-        posterior_beta = beta_0 + float(self.season_stats.matches_played)
+        ss = replace(self.season_stats, league_strength=updated_league_strength)
 
-        if posterior_beta <= 0:
-            raise ValueError(f"posterior_beta must be > 0, got {posterior_beta}")
-
+        posterior_beta = beta_0 + float(ss.matches_played)
         posterior = StrengthItem(
-            offensive=posterior_alpha_off / posterior_beta,
-            defensive=posterior_alpha_def / posterior_beta,
+            offensive=(alpha_0 + float(ss.goals_for)) / posterior_beta,
+            defensive=(alpha_0 + float(ss.goals_against)) / posterior_beta,
         )
 
-        new_stats = replace(self.season_stats, league_strength=updated_league_strength)
-
-        self.posterior = posterior
-        self.season_stats = new_stats
-
-        self.expected_goals = str(posterior.offensive)
-
-        return self
-    
-    def SetExpectedGoalsFromPosterior(self) -> float:
-        if self.posterior.offensive == 0:
-            return self.expected_goals
-        return self.posterior.offensive
+        return replace(
+            self,
+            season_stats=ss,
+            posterior=posterior,
+            expected_goals=str(posterior.offensive),
+        )
 
 
 @dataclass(frozen=False)
@@ -392,10 +405,10 @@ class SeasonStats:
             goals_against=item.get("GoalsAgainst"),
         )
 
-    def increment(self, match_round: MatchRound, is_home_team: bool) -> "SeasonStats":
+    def incremented(self, match_round: MatchRound, is_home_team: bool) -> "SeasonStats":
         if match_round.home_goals is None or match_round.away_goals is None:
             raise ValueError(
-                f"Home goals or away goals are null!! MatchRoundId:{match_round.id}"
+                f"Home goals or away goals are null. MatchRoundId:{match_round.id}"
             )
 
         matches_played = self.matches_played + 1
@@ -403,30 +416,27 @@ class SeasonStats:
         goals_for, goals_against = self.goals_for, self.goals_against
 
         if is_home_team:
-            if match_round.home_goals > match_round.away_goals:
+            gf, ga = match_round.home_goals, match_round.away_goals
+            if gf > ga:
                 wins += 1
-            elif match_round.home_goals < match_round.away_goals:
+            elif gf < ga:
                 losses += 1
             else:
                 draws += 1
-            goals_for += match_round.home_goals
-            goals_against += match_round.away_goals
         else:
-            if match_round.home_goals > match_round.away_goals:
-                losses += 1
-            elif match_round.home_goals < match_round.away_goals:
+            gf, ga = match_round.away_goals, match_round.home_goals
+            if gf > ga:
                 wins += 1
+            elif gf < ga:
+                losses += 1
             else:
                 draws += 1
-            goals_for += match_round.away_goals
-            goals_against += match_round.home_goals
 
-        return SeasonStats(
-            id=self.id,
-            team_id=self.team_id,
-            season_year=self.season_year,
-            league_id=self.league_id,
-            league_strength=self.league_strength,
+        goals_for += gf
+        goals_against += ga
+
+        return replace(
+            self,
             matches_played=matches_played,
             wins=wins,
             losses=losses,

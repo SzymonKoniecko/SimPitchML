@@ -149,18 +149,23 @@ class XgboostService:
                 init_prediction.round_no_by_round_id,
                 match_round.home_team_id,
                 prev_round_id,
-                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7)
+                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7),
             )
             away_strength = TrainingBuilder.get_strength_or_fallback(
                 strength_map,
                 init_prediction.round_no_by_round_id,
                 match_round.away_team_id,
                 prev_round_id,
-                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7)
+                league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7),
             )
             predicted_match_round, (predicted_home_ts, predicted_away_ts) = (
                 await self.predict_single_result(
-                    match_round, home_strength, away_strength, prev_round_id, predictRequest, models
+                    match_round,
+                    home_strength,
+                    away_strength,
+                    prev_round_id,
+                    predictRequest,
+                    models,
                 )
             )
             iteration_result.simulated_match_rounds.append(predicted_match_round)
@@ -216,7 +221,7 @@ class XgboostService:
         pred_home_goals = float(models.home.predict(x_predict)[0])
         pred_away_goals = float(models.away.predict(x_predict)[0])
 
-        # Post-process (clamp + round)
+        #   Post-process (clamp + round)
         MAX_GOALS = 15
         pred_home_goals = max(0.0, min(float(MAX_GOALS), pred_home_goals))
         pred_away_goals = max(0.0, min(float(MAX_GOALS), pred_away_goals))
@@ -229,12 +234,24 @@ class XgboostService:
         match_round.is_draw = home_goals == away_goals
         match_round.is_played = True
 
-        team_strength_home = home_strength.SetLikelihood()
-        team_strength_home.SetPosterior(games_to_reach_trust=predictRequest.games_to_reach_trust, league_strength=predictRequest.league_avg_strength)
-        team_strength_home.SetExpectedGoalsFromPosterior()
+        now = datetime.now().isoformat()
 
-        team_strength_away = away_strength.SetLikelihood()
-        team_strength_away.SetPosterior(games_to_reach_trust=predictRequest.games_to_reach_trust, league_strength=predictRequest.league_avg_strength)
-        team_strength_away.SetExpectedGoalsFromPosterior()
+        base_home = home_strength.with_round_meta(match_round.round_id, now)
+        team_strength_home = (
+            base_home.with_incremented_stats(match_round, is_home_team=True)
+            .with_likelihood()
+            .with_posterior(
+                predictRequest.games_to_reach_trust, predictRequest.league_avg_strength
+            )
+        )
+
+        base_away = away_strength.with_round_meta(match_round.round_id, now)
+        team_strength_away = (
+            base_away.with_incremented_stats(match_round, is_home_team=False)
+            .with_likelihood()
+            .with_posterior(
+                predictRequest.games_to_reach_trust, predictRequest.league_avg_strength
+            )
+        )
 
         return match_round, (team_strength_home, team_strength_away)
