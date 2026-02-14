@@ -107,8 +107,11 @@ class Mapper:
 
     @staticmethod
     def map_iteration_result_to_proto(
-        iteration_result: IterationResult,
+        status: str, iteration_result: IterationResult,
     ) -> commonTypes_SimPitchMl.IterationResultGrpc:
+        if status == "COMPLETED" and iteration_result is None: #its an end of prediction
+            return None
+        
         grpc_object = commonTypes_SimPitchMl.IterationResultGrpc(
             id=str(iteration_result.id) if iteration_result.id is not None else "",
             simulation_id=(
@@ -135,6 +138,6 @@ class Mapper:
         grpc_obj = responses_pb2_SimPitchMl.PredictResponse(
             status=status,
             predicted_iterations=counter,
-            iteration_result=Mapper.map_iteration_result_to_proto(iteration_result),
+            iteration_result=Mapper.map_iteration_result_to_proto(status, iteration_result),
         )
         return grpc_obj
