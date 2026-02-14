@@ -126,7 +126,7 @@ class IterationResult:
                         or 1.0
                     ),
                 ),
-                expected_goals=str(
+                expected_goals=float(
                     item.get("ExpectedGoals") or item.get("expected_goals") or 0.0
                 ),
                 last_update=item.get("LastUpdate") or item.get("last_update") or "2001-01-01T05:14:36.246303",
@@ -235,7 +235,7 @@ class TeamStrength:
     team_id: str
     likelihood: StrengthItem
     posterior: StrengthItem
-    expected_goals: str
+    expected_goals: float
     last_update: str
     round_id: str
     season_stats: SeasonStats = field(
@@ -313,7 +313,7 @@ class TeamStrength:
     def get_team_strength_average_baseline(
         round_id: str = str(uuid.UUID(int=0)),
         last_update: str = "2001-01-01T22:00:00.000000",
-        expected_goals: str = 1.0,
+        expected_goals: float = 1.0,
         offensive: float = 1.0,
         defensive: float = 1.0,
         team_id: str = str(uuid.UUID(int=0)),
@@ -337,6 +337,7 @@ class TeamStrength:
                 season_year=season_year,
                 league_id=league_id,
                 league_strength=league_strength,
+                id = str(uuid.uuid4())
             ),
         )
 
@@ -384,7 +385,7 @@ class TeamStrength:
             self,
             season_stats=ss,
             posterior=posterior,
-            expected_goals=str(posterior.offensive),
+            expected_goals=float(posterior.offensive),
         )
 
 
@@ -450,8 +451,9 @@ class SeasonStats:
         matches_played = self.matches_played + 1
         wins, losses, draws = self.wins, self.losses, self.draws
         goals_for, goals_against = self.goals_for, self.goals_against
-
+        team_id = ""
         if is_home_team:
+            team_id = match_round.home_team_id
             gf, ga = match_round.home_goals, match_round.away_goals
             if gf > ga:
                 wins += 1
@@ -460,6 +462,7 @@ class SeasonStats:
             else:
                 draws += 1
         else:
+            team_id = match_round.away_team_id
             gf, ga = match_round.away_goals, match_round.home_goals
             if gf > ga:
                 wins += 1
@@ -473,6 +476,8 @@ class SeasonStats:
 
         return replace(
             self,
+            id=str(uuid.uuid4()),
+            team_id= team_id,
             matches_played=matches_played,
             wins=wins,
             losses=losses,
