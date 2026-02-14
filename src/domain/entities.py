@@ -97,7 +97,9 @@ class IterationResult:
             posterior = item.get("Posterior") or item.get("posterior") or {}
 
             ts = TeamStrength(
-                team_id=item.get("TeamId") or item.get("team_id") or str(uuid.UUID(int=0)),
+                team_id=item.get("TeamId")
+                or item.get("team_id")
+                or str(uuid.UUID(int=0)),
                 likelihood=StrengthItem(
                     offensive=float(
                         likelihood.get("Offensive")
@@ -129,7 +131,9 @@ class IterationResult:
                 expected_goals=float(
                     item.get("ExpectedGoals") or item.get("expected_goals") or 0.0
                 ),
-                last_update=item.get("LastUpdate") or item.get("last_update") or "2001-01-01T05:14:36.246303",
+                last_update=item.get("LastUpdate")
+                or item.get("last_update")
+                or "2001-01-01T05:14:36.246303",
                 round_id=item.get("RoundId")
                 or item.get("round_id")
                 or str(uuid.UUID(int=0)),
@@ -258,14 +262,18 @@ class TeamStrength:
             lst.sort(key=lambda x: x.last_update, reverse=True)
 
         return dict(grouped)
+
     @staticmethod
     def strength_map_to_list(
         strength_map: Dict[Tuple[str, str], List["TeamStrength"]],
     ) -> List["TeamStrength"]:
-        def as_list(v: Union[List["TeamStrength"], "TeamStrength"]) -> List["TeamStrength"]:
+        def as_list(
+            v: Union[List["TeamStrength"], "TeamStrength"],
+        ) -> List["TeamStrength"]:
             return v if isinstance(v, list) else [v]
 
         return list(chain.from_iterable(as_list(v) for v in strength_map.values()))
+
     @staticmethod
     def strength_map_from_dict(
         items: Dict[str, List[TeamStrength]],
@@ -317,7 +325,7 @@ class TeamStrength:
         offensive: float = 1.0,
         defensive: float = 1.0,
         team_id: str = str(uuid.UUID(int=0)),
-        season_year: int = 3, # enum seasonYear has 3 as 2025/2026
+        season_year: int = 3,  # enum seasonYear has 3 as 2025/2026
         league_id: str = str(uuid.UUID(int=0)),
         league_strength: float = 1.0,
     ) -> "TeamStrength":
@@ -337,7 +345,7 @@ class TeamStrength:
                 season_year=season_year,
                 league_id=league_id,
                 league_strength=league_strength,
-                id = str(uuid.uuid4())
+                id=str(uuid.uuid4()),
             ),
         )
 
@@ -410,7 +418,7 @@ class SeasonStats:
         season_year: int = 3,
         league_id: str = str(uuid.UUID(int=0)),
         league_strength: float = 1.0,
-        id: str = str(uuid.UUID(int=0))
+        id: str = str(uuid.UUID(int=0)),
     ) -> "SeasonStats":
         return SeasonStats(
             id=id,
@@ -477,7 +485,7 @@ class SeasonStats:
         return replace(
             self,
             id=str(uuid.uuid4()),
-            team_id= team_id,
+            team_id=team_id,
             matches_played=matches_played,
             wins=wins,
             losses=losses,
