@@ -153,6 +153,7 @@ class XgboostService:
                 match_round,
                 True,
                 prev_round_id,
+                league_id=predictRequest.league_id,
                 league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7),
             )
             away_strength = TrainingBuilder.get_strength_or_fallback(
@@ -162,6 +163,7 @@ class XgboostService:
                 match_round,
                 False,
                 prev_round_id,
+                league_id=predictRequest.league_id,
                 league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7),
             )
             predicted_match_round, (predicted_home_ts, predicted_away_ts) = (

@@ -4,6 +4,7 @@ from src.domain.entities import (
     InitPrediction,
     IterationResult,
     LeagueRound,
+    PagedResponse,
     PredictRequest
 )
 
@@ -20,6 +21,6 @@ class SimulationServicePort(Protocol):
     ) -> InitPrediction: ...
     async def run_all_overview_scenario(self): ...
     async def run_get_iterationResults_by_simulationId(
-        self,
-    ) -> Optional[IterationResult]: ...
+        self, simulation_id: str
+    ) -> Optional[PagedResponse[IterationResult]]: ...
     async def get_pending_simulations_to_sync(self) -> List[str]: ...

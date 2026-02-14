@@ -58,6 +58,7 @@ class TrainingBuilder:
         prev_round_id_by_round_id: Dict[str, str],
         round_no_by_round_id: Dict[str, int],
         round_id_by_round_no: Dict[int, str],
+        league_id: str,
         league_avg: str,
     ) -> List[TrainingData]:
         if match_rounds is None or len(match_rounds) == 0:
@@ -74,6 +75,7 @@ class TrainingBuilder:
             prev_round_id_by_round_id=prev_round_id_by_round_id,
             round_no_by_round_id=round_no_by_round_id,
             round_id_by_round_no=round_id_by_round_no,
+            league_id=league_id,
             league_avg=league_avg,
         )
 
@@ -84,6 +86,7 @@ class TrainingBuilder:
         prev_round_id_by_round_id: Dict[str, str],
         round_no_by_round_id: Dict[str, int],
         round_id_by_round_no: Dict[int, str],
+        league_id: str,
         league_avg: str,
     ) -> List[TrainingData]:
 
@@ -103,6 +106,7 @@ class TrainingBuilder:
                 m_result,
                 True,
                 prev_round_id,
+                league_id=league_id,
                 league_avg_strength=league_avg,
             )
             away_strength = TrainingBuilder.get_strength_or_fallback(
@@ -112,6 +116,7 @@ class TrainingBuilder:
                 m_result,
                 False,
                 prev_round_id,
+                league_id=league_id,
                 league_avg_strength=league_avg,
             )
 
@@ -135,6 +140,7 @@ class TrainingBuilder:
         is_home: bool,
         prev_round_id: str,
         *,
+        league_id: str,
         league_avg_strength: Optional[float] = None,
     ) -> TeamStrength:
         team_id = match_round.home_team_id if is_home else match_round.away_team_id
@@ -146,13 +152,13 @@ class TrainingBuilder:
                 return strengths
             if not strengths:
                 return None
-            return max(strengths, key=lambda x: x.last_update) 
+            return max(strengths, key=lambda x: x.last_update)
 
         def updateStatsByMatchRound(
             ts: TeamStrength, is_incoming_match: bool
         ) -> TeamStrength:
             if is_incoming_match:  # incoming match does't have home/away goals.
-                return ts
+                return ts.with_posterior(25, league_avg_strength)
             return (
                 ts.with_incremented_stats(match_round, is_home_team=is_home)
                 .with_likelihood()
@@ -187,7 +193,8 @@ class TrainingBuilder:
                     )
                     return updateStatsByMatchRound(
                         base_home,
-                        match_round.home_goals is None or match_round.away_goals is None
+                        match_round.home_goals is None
+                        or match_round.away_goals is None,
                     )
 
         if league_avg_strength is None:
@@ -204,14 +211,16 @@ class TrainingBuilder:
 
         return updateStatsByMatchRound(
             TeamStrength.get_team_strength_average_baseline(
-                team_id=team_id,
                 round_id=prev_round_id,
+                last_update=datetime.now().isoformat(),
+                expected_goals=0.00,
                 offensive=float(league_avg_strength),
                 defensive=float(league_avg_strength),
-                last_update=datetime.now().isoformat(),
-                expected_goals="N/A",
+                team_id=team_id,
+                league_id=league_id,
+                league_strength=league_avg_strength,
             ),
-            match_round.home_goals is None or match_round.away_goals is None
+            match_round.home_goals is None or match_round.away_goals is None,
         )
 
     @staticmethod

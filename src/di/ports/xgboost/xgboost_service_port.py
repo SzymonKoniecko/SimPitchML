@@ -25,7 +25,7 @@ class XgboostServicePort(Protocol):
         predictRequest: PredictRequest,
         init_prediction: InitPrediction,
         iteration_index: int,
-        models: TrainedModels
+        models: TrainedModels,
     ) -> IterationResult: ...
     async def predict_single_result(
         self,
@@ -34,5 +34,5 @@ class XgboostServicePort(Protocol):
         away_strength: Optional[TeamStrength],
         prev_round_id: str,
         predictRequest: PredictRequest,
-        models: TrainedModels
+        models: TrainedModels,
     ) -> Tuple[MatchRound, Tuple[TeamStrength, TeamStrength]]: ...

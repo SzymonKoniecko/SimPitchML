@@ -124,6 +124,7 @@ class SimulationService:
                         prev_round_id_by_round_id=prev_round_id_by_round_id,
                         round_no_by_round_id=round_no_by_round_id,
                         round_id_by_round_no=round_id_by_round_no,
+                        league_id=predict_request.league_id,
                         league_avg=predict_request.league_avg_strength,
                     )
                     list_training_data_dataset.extend(  # extend() because of stays in the single list

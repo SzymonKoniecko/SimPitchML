@@ -129,7 +129,7 @@ class IterationResult:
                 expected_goals=str(
                     item.get("ExpectedGoals") or item.get("expected_goals") or 0.0
                 ),
-                last_update=item.get("LastUpdate") or item.get("last_update") or "N/A",
+                last_update=item.get("LastUpdate") or item.get("last_update") or "2001-01-01T05:14:36.246303",
                 round_id=item.get("RoundId")
                 or item.get("round_id")
                 or str(uuid.UUID(int=0)),
@@ -239,7 +239,7 @@ class TeamStrength:
     last_update: str
     round_id: str
     season_stats: SeasonStats = field(
-        default_factory=lambda: SeasonStats.empty(team_id="N/A")
+        default_factory=lambda: SeasonStats.empty(team_id=str(uuid.UUID(int=0)))
     )
     # ^ default_factory
 
@@ -311,14 +311,14 @@ class TeamStrength:
 
     @staticmethod
     def get_team_strength_average_baseline(
-        round_id: str = "LEAGUE_AVG",
+        round_id: str = str(uuid.UUID(int=0)),
         last_update: str = "2001-01-01T22:00:00.000000",
-        expected_goals: str = "N/A",
+        expected_goals: str = 1.0,
         offensive: float = 1.0,
         defensive: float = 1.0,
-        team_id: str = "LEAGUE_AVG",
-        season_year: str = "N/A",
-        league_id: str = "N/A",
+        team_id: str = str(uuid.UUID(int=0)),
+        season_year: int = 3, # enum seasonYear has 3 as 2025/2026
+        league_id: str = str(uuid.UUID(int=0)),
         league_strength: float = 1.0,
     ) -> "TeamStrength":
         return TeamStrength(
@@ -406,10 +406,10 @@ class SeasonStats:
     def empty(
         *,
         team_id: str,
-        season_year: str = "N/A",
-        league_id: str = "N/A",
+        season_year: int = 3,
+        league_id: str = str(uuid.UUID(int=0)),
         league_strength: float = 1.0,
-        id: str = "N/A",
+        id: str = str(uuid.UUID(int=0))
     ) -> "SeasonStats":
         return SeasonStats(
             id=id,
