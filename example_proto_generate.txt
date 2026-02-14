@@ -3,27 +3,16 @@
 python3 -m pip install -r requirements.txt
 
 
-python3 -m grpc_tools.protoc \
-  -Iproto/SimulationService \
-  --python_out=./src/generated/SimulationEngine \
-  --grpc_python_out=./src/generated/SimulationEngine \
-  proto/SimulationService/SimulationEngine/service.proto \
-  proto/SimulationService/SimulationEngine/requests.proto \
-  proto/SimulationService/SimulationEngine/responses.proto \
-  proto/SimulationService/commonTypes.proto
 
 
-# ponizej najlepsze - 
-
-
-mkdir -p ./src/generatedSportsDataProtos    
+mkdir -p ./src/generatedSimulationProtos   
 python3 -m grpc_tools.protoc -Iproto \
-  --python_out=./src/generatedSportsDataProtos \
-  --grpc_python_out=./src/generatedSportsDataProtos \
-  proto/SportsDataService/MatchRound/service.proto \
-  proto/SportsDataService/MatchRound/requests.proto \
-  proto/SportsDataService/MatchRound/responses.proto \
-  proto/SportsDataService/commonTypes.proto
+  --python_out=./src/generatedSimulationProtos \
+  --grpc_python_out=./src/generatedSimulationProtos \
+  proto/SimulationService/IterationResult/service.proto \
+  proto/SimulationService/IterationResult/requests.proto \
+  proto/SimulationService/IterationResult/responses.proto \
+  proto/SimulationService/commonTypes.proto
 
 
 find ./src/generated/simulation -type d -not -path "*/__pycache__*" -exec touch {}/__init__.py \;

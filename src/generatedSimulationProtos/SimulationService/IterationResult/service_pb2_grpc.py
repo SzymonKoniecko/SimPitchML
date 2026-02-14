@@ -4,6 +4,7 @@ import grpc
 
 from src.generatedSimulationProtos.SimulationService.IterationResult import requests_pb2 as SimulationService_dot_IterationResult_dot_requests__pb2
 from src.generatedSimulationProtos.SimulationService.IterationResult import responses_pb2 as SimulationService_dot_IterationResult_dot_responses__pb2
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 class IterationResultServiceStub(object):
@@ -25,6 +26,11 @@ class IterationResultServiceStub(object):
                 request_serializer=SimulationService_dot_IterationResult_dot_requests__pb2.IterationResultsBySimulationIdRequest.SerializeToString,
                 response_deserializer=SimulationService_dot_IterationResult_dot_responses__pb2.IterationResultsBySimulationIdResponse.FromString,
                 )
+        self.SaveIterationResult = channel.unary_unary(
+                '/SimPitchProtos.SimulationService.IterationResult.IterationResultService/SaveIterationResult',
+                request_serializer=SimulationService_dot_IterationResult_dot_requests__pb2.SaveIterationResultRequest.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
 
 
 class IterationResultServiceServicer(object):
@@ -42,6 +48,12 @@ class IterationResultServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SaveIterationResult(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_IterationResultServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -54,6 +66,11 @@ def add_IterationResultServiceServicer_to_server(servicer, server):
                     servicer.GetIterationResultsBySimulationId,
                     request_deserializer=SimulationService_dot_IterationResult_dot_requests__pb2.IterationResultsBySimulationIdRequest.FromString,
                     response_serializer=SimulationService_dot_IterationResult_dot_responses__pb2.IterationResultsBySimulationIdResponse.SerializeToString,
+            ),
+            'SaveIterationResult': grpc.unary_unary_rpc_method_handler(
+                    servicer.SaveIterationResult,
+                    request_deserializer=SimulationService_dot_IterationResult_dot_requests__pb2.SaveIterationResultRequest.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -96,5 +113,22 @@ class IterationResultService(object):
         return grpc.experimental.unary_stream(request, target, '/SimPitchProtos.SimulationService.IterationResult.IterationResultService/GetIterationResultsBySimulationId',
             SimulationService_dot_IterationResult_dot_requests__pb2.IterationResultsBySimulationIdRequest.SerializeToString,
             SimulationService_dot_IterationResult_dot_responses__pb2.IterationResultsBySimulationIdResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SaveIterationResult(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/SimPitchProtos.SimulationService.IterationResult.IterationResultService/SaveIterationResult',
+            SimulationService_dot_IterationResult_dot_requests__pb2.SaveIterationResultRequest.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

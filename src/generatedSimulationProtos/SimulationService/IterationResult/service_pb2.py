@@ -12,12 +12,13 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
-from SimulationService.IterationResult import requests_pb2 as SimulationService_dot_IterationResult_dot_requests__pb2
-from SimulationService.IterationResult import responses_pb2 as SimulationService_dot_IterationResult_dot_responses__pb2
-from SimulationService import commonTypes_pb2 as SimulationService_dot_commonTypes__pb2
+from src.generatedSimulationProtos.SimulationService.IterationResult import requests_pb2 as SimulationService_dot_IterationResult_dot_requests__pb2
+from src.generatedSimulationProtos.SimulationService.IterationResult import responses_pb2 as SimulationService_dot_IterationResult_dot_responses__pb2
+from src.generatedSimulationProtos.SimulationService import commonTypes_pb2 as SimulationService_dot_commonTypes__pb2
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n/SimulationService/IterationResult/service.proto\x12\x30SimPitchProtos.SimulationService.IterationResult\x1a\x30SimulationService/IterationResult/requests.proto\x1a\x31SimulationService/IterationResult/responses.proto\x1a#SimulationService/commonTypes.proto2\xab\x03\n\x16IterationResultService\x12\xb5\x01\n\x16GetIterationResultById\x12L.SimPitchProtos.SimulationService.IterationResult.IterationResultByIdRequest\x1aM.SimPitchProtos.SimulationService.IterationResult.IterationResultByIdResponse\x12\xd8\x01\n!GetIterationResultsBySimulationId\x12W.SimPitchProtos.SimulationService.IterationResult.IterationResultsBySimulationIdRequest\x1aX.SimPitchProtos.SimulationService.IterationResult.IterationResultsBySimulationIdResponse0\x01\x42\x33\xaa\x02\x30SimPitchProtos.SimulationService.IterationResultb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n/SimulationService/IterationResult/service.proto\x12\x30SimPitchProtos.SimulationService.IterationResult\x1a\x30SimulationService/IterationResult/requests.proto\x1a\x31SimulationService/IterationResult/responses.proto\x1a#SimulationService/commonTypes.proto\x1a\x1bgoogle/protobuf/empty.proto2\xa8\x04\n\x16IterationResultService\x12\xb5\x01\n\x16GetIterationResultById\x12L.SimPitchProtos.SimulationService.IterationResult.IterationResultByIdRequest\x1aM.SimPitchProtos.SimulationService.IterationResult.IterationResultByIdResponse\x12\xd8\x01\n!GetIterationResultsBySimulationId\x12W.SimPitchProtos.SimulationService.IterationResult.IterationResultsBySimulationIdRequest\x1aX.SimPitchProtos.SimulationService.IterationResult.IterationResultsBySimulationIdResponse0\x01\x12{\n\x13SaveIterationResult\x12L.SimPitchProtos.SimulationService.IterationResult.SaveIterationResultRequest\x1a\x16.google.protobuf.EmptyB3\xaa\x02\x30SimPitchProtos.SimulationService.IterationResultb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -25,6 +26,6 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'SimulationService.Iteration
 if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._options = None
   _globals['DESCRIPTOR']._serialized_options = b'\252\0020SimPitchProtos.SimulationService.IterationResult'
-  _globals['_ITERATIONRESULTSERVICE']._serialized_start=240
-  _globals['_ITERATIONRESULTSERVICE']._serialized_end=667
+  _globals['_ITERATIONRESULTSERVICE']._serialized_start=269
+  _globals['_ITERATIONRESULTSERVICE']._serialized_end=821
 # @@protoc_insertion_point(module_scope)

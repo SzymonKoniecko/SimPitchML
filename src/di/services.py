@@ -3,7 +3,10 @@ from src.adapters.grpc.client.iteration_result import IterationResultClient
 from src.adapters.grpc.client.league_round import LeagueRoundClient
 from src.adapters.grpc.client.match_round import MatchRoundClient
 from src.adapters.grpc.client.simulation_engine import SimulationEngineClient
+from src.adapters.grpc.server.predict_service import PredictServiceServicer
 from src.adapters.persistence.json_repository import JsonFileRepository
+from src.di.ports.simulation_service_port import SimulationServicePort
+from src.domain.entities import PredictRequest
 from src.services.simulation_service import SimulationService
 from src.services.sportsdata_service import SportsDataService
 from src.services.synchronization_service import SynchronizationService
@@ -82,3 +85,12 @@ def get_simulation_service(
     return SimulationService(
         engine, iteration_results, synchronization, sportsdata_service, xgboost_service
     )
+
+def get_predict_grpc_servicer(
+    simulation_service: SimulationServicePort = Depends(get_simulation_service),
+) -> PredictServiceServicer:
+    """
+    DI: tworzy gRPC servicer na bazie już istniejącego SimulationService (port).
+    NIE tworzymy nowego SimulationService - korzystamy z get_simulation_service().
+    """
+    return PredictServiceServicer(simulation_service)

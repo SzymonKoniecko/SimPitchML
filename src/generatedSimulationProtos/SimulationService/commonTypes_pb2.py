@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#SimulationService/commonTypes.proto\x12 SimPitchProtos.SimulationService\"\xb5\x01\n\x13IterationResultGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x15\n\rsimulation_id\x18\x02 \x01(\t\x12\x17\n\x0fiteration_index\x18\x03 \x01(\x05\x12\x12\n\nstart_date\x18\x04 \x01(\t\x12\x16\n\x0e\x65xecution_time\x18\x05 \x01(\t\x12\x16\n\x0eteam_strengths\x18\x06 \x01(\t\x12\x1e\n\x16simulated_match_rounds\x18\x07 \x01(\t\"\x9f\x04\n\x14SimulationParamsGrpc\x12\r\n\x05title\x18\x01 \x01(\t\x12\x14\n\x0cseason_years\x18\x02 \x03(\t\x12\x11\n\tleague_id\x18\x03 \x01(\t\x12\x12\n\niterations\x18\x04 \x01(\x05\x12\x0c\n\x04seed\x18\x05 \x01(\x05\x12\x1c\n\x0fleague_round_id\x18\x06 \x01(\tH\x00\x88\x01\x01\x12\x34\n\'create_scoreboard_on_complete_iteration\x18\x07 \x01(\x08H\x01\x88\x01\x01\x12!\n\x14games_to_reach_trust\x18\x08 \x01(\x05H\x02\x88\x01\x01\x12\x1d\n\x10\x63onfidence_level\x18\t \x01(\x02H\x03\x88\x01\x01\x12\x1b\n\x0ehome_advantage\x18\n \x01(\x02H\x04\x88\x01\x01\x12\x19\n\x0cnoise_factor\x18\x0b \x01(\x02H\x05\x88\x01\x01\x12#\n\x16target_league_round_id\x18\x0c \x01(\tH\x06\x88\x01\x01\x12\r\n\x05model\x18\r \x01(\tB\x12\n\x10_league_round_idB*\n(_create_scoreboard_on_complete_iterationB\x17\n\x15_games_to_reach_trustB\x13\n\x11_confidence_levelB\x11\n\x0f_home_advantageB\x0f\n\r_noise_factorB\x19\n\x17_target_league_round_id\"\xc6\x01\n\x16SimulationOverviewGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x14\n\x0c\x63reated_date\x18\x02 \x01(\t\x12Q\n\x11simulation_params\x18\x03 \x01(\x0b\x32\x36.SimPitchProtos.SimulationService.SimulationParamsGrpc\x12\x18\n\x10league_strengths\x18\x04 \x01(\t\x12\x1d\n\x15prior_league_strength\x18\x05 \x01(\x02\"\x97\x01\n\x13SimulationStateGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x15\n\rsimulation_id\x18\x02 \x01(\t\x12 \n\x18last_completed_iteration\x18\x03 \x01(\x05\x12\x18\n\x10progress_percent\x18\x04 \x01(\x02\x12\r\n\x05state\x18\x05 \x01(\t\x12\x12\n\nupdated_at\x18\x06 \x01(\t\"M\n\x11SortingMethodGrpc\x12\x16\n\x0esorting_option\x18\x01 \x01(\t\x12\r\n\x05order\x18\x02 \x01(\t\x12\x11\n\tcondition\x18\x03 \x01(\t\"~\n\x10PagedRequestGrpc\x12\x0e\n\x06offset\x18\x01 \x01(\x05\x12\r\n\x05limit\x18\x02 \x01(\x05\x12K\n\x0esorting_method\x18\x03 \x01(\x0b\x32\x33.SimPitchProtos.SimulationService.SortingMethodGrpc\"W\n\x11PagedResponseGrpc\x12\x13\n\x0btotal_count\x18\x01 \x01(\x05\x12\x16\n\x0esorting_option\x18\x02 \x01(\t\x12\x15\n\rsorting_order\x18\x03 \x01(\tB#\xaa\x02 SimPitchProtos.SimulationServiceb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n#SimulationService/commonTypes.proto\x12 SimPitchProtos.SimulationService\"\xce\x01\n\x13IterationResultGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x15\n\rsimulation_id\x18\x02 \x01(\t\x12\x1c\n\x0fiteration_index\x18\x03 \x01(\x05H\x00\x88\x01\x01\x12\x12\n\nstart_date\x18\x04 \x01(\t\x12\x16\n\x0e\x65xecution_time\x18\x05 \x01(\t\x12\x16\n\x0eteam_strengths\x18\x06 \x01(\t\x12\x1e\n\x16simulated_match_rounds\x18\x07 \x01(\tB\x12\n\x10_iteration_index\"\x9f\x04\n\x14SimulationParamsGrpc\x12\r\n\x05title\x18\x01 \x01(\t\x12\x14\n\x0cseason_years\x18\x02 \x03(\t\x12\x11\n\tleague_id\x18\x03 \x01(\t\x12\x12\n\niterations\x18\x04 \x01(\x05\x12\x0c\n\x04seed\x18\x05 \x01(\x05\x12\x1c\n\x0fleague_round_id\x18\x06 \x01(\tH\x00\x88\x01\x01\x12\x34\n\'create_scoreboard_on_complete_iteration\x18\x07 \x01(\x08H\x01\x88\x01\x01\x12!\n\x14games_to_reach_trust\x18\x08 \x01(\x05H\x02\x88\x01\x01\x12\x1d\n\x10\x63onfidence_level\x18\t \x01(\x02H\x03\x88\x01\x01\x12\x1b\n\x0ehome_advantage\x18\n \x01(\x02H\x04\x88\x01\x01\x12\x19\n\x0cnoise_factor\x18\x0b \x01(\x02H\x05\x88\x01\x01\x12#\n\x16target_league_round_id\x18\x0c \x01(\tH\x06\x88\x01\x01\x12\r\n\x05model\x18\r \x01(\tB\x12\n\x10_league_round_idB*\n(_create_scoreboard_on_complete_iterationB\x17\n\x15_games_to_reach_trustB\x13\n\x11_confidence_levelB\x11\n\x0f_home_advantageB\x0f\n\r_noise_factorB\x19\n\x17_target_league_round_id\"\xc6\x01\n\x16SimulationOverviewGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x14\n\x0c\x63reated_date\x18\x02 \x01(\t\x12Q\n\x11simulation_params\x18\x03 \x01(\x0b\x32\x36.SimPitchProtos.SimulationService.SimulationParamsGrpc\x12\x18\n\x10league_strengths\x18\x04 \x01(\t\x12\x1d\n\x15prior_league_strength\x18\x05 \x01(\x02\"\x97\x01\n\x13SimulationStateGrpc\x12\n\n\x02id\x18\x01 \x01(\t\x12\x15\n\rsimulation_id\x18\x02 \x01(\t\x12 \n\x18last_completed_iteration\x18\x03 \x01(\x05\x12\x18\n\x10progress_percent\x18\x04 \x01(\x02\x12\r\n\x05state\x18\x05 \x01(\t\x12\x12\n\nupdated_at\x18\x06 \x01(\t\"M\n\x11SortingMethodGrpc\x12\x16\n\x0esorting_option\x18\x01 \x01(\t\x12\r\n\x05order\x18\x02 \x01(\t\x12\x11\n\tcondition\x18\x03 \x01(\t\"~\n\x10PagedRequestGrpc\x12\x0e\n\x06offset\x18\x01 \x01(\x05\x12\r\n\x05limit\x18\x02 \x01(\x05\x12K\n\x0esorting_method\x18\x03 \x01(\x0b\x32\x33.SimPitchProtos.SimulationService.SortingMethodGrpc\"W\n\x11PagedResponseGrpc\x12\x13\n\x0btotal_count\x18\x01 \x01(\x05\x12\x16\n\x0esorting_option\x18\x02 \x01(\t\x12\x15\n\rsorting_order\x18\x03 \x01(\tB#\xaa\x02 SimPitchProtos.SimulationServiceb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -23,17 +23,17 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['DESCRIPTOR']._options = None
   _globals['DESCRIPTOR']._serialized_options = b'\252\002 SimPitchProtos.SimulationService'
   _globals['_ITERATIONRESULTGRPC']._serialized_start=74
-  _globals['_ITERATIONRESULTGRPC']._serialized_end=255
-  _globals['_SIMULATIONPARAMSGRPC']._serialized_start=258
-  _globals['_SIMULATIONPARAMSGRPC']._serialized_end=801
-  _globals['_SIMULATIONOVERVIEWGRPC']._serialized_start=804
-  _globals['_SIMULATIONOVERVIEWGRPC']._serialized_end=1002
-  _globals['_SIMULATIONSTATEGRPC']._serialized_start=1005
-  _globals['_SIMULATIONSTATEGRPC']._serialized_end=1156
-  _globals['_SORTINGMETHODGRPC']._serialized_start=1158
-  _globals['_SORTINGMETHODGRPC']._serialized_end=1235
-  _globals['_PAGEDREQUESTGRPC']._serialized_start=1237
-  _globals['_PAGEDREQUESTGRPC']._serialized_end=1363
-  _globals['_PAGEDRESPONSEGRPC']._serialized_start=1365
-  _globals['_PAGEDRESPONSEGRPC']._serialized_end=1452
+  _globals['_ITERATIONRESULTGRPC']._serialized_end=280
+  _globals['_SIMULATIONPARAMSGRPC']._serialized_start=283
+  _globals['_SIMULATIONPARAMSGRPC']._serialized_end=826
+  _globals['_SIMULATIONOVERVIEWGRPC']._serialized_start=829
+  _globals['_SIMULATIONOVERVIEWGRPC']._serialized_end=1027
+  _globals['_SIMULATIONSTATEGRPC']._serialized_start=1030
+  _globals['_SIMULATIONSTATEGRPC']._serialized_end=1181
+  _globals['_SORTINGMETHODGRPC']._serialized_start=1183
+  _globals['_SORTINGMETHODGRPC']._serialized_end=1260
+  _globals['_PAGEDREQUESTGRPC']._serialized_start=1262
+  _globals['_PAGEDREQUESTGRPC']._serialized_end=1388
+  _globals['_PAGEDRESPONSEGRPC']._serialized_start=1390
+  _globals['_PAGEDRESPONSEGRPC']._serialized_end=1477
 # @@protoc_insertion_point(module_scope)

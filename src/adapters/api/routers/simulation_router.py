@@ -14,10 +14,9 @@ async def post_simulation(
 ):
     logger.info(f"API Request POST: post_simulation() with body={body}")
     
-    result = await service.init_prediction(body)
+    result = await service.run_prediction(body)
     
-    # Make sure to return a JSON-serializable type
-    return {"result": result}
+    return {"iterationResults": result}
 
 @router.get("/simulations/overviews/all")
 async def get_simulation_overview(
@@ -59,7 +58,7 @@ async def get_iteration_results(
         simulation_id=simulation_id
     )
 
-    if not result or not result.items:
+    if not result or not result:
         raise HTTPException(
             status_code=404,
             detail="No iteration results found or error occurred",
