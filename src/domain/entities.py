@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, asdict, field, replace
+from itertools import chain
 from typing import (
     Any,
     DefaultDict,
@@ -96,7 +97,7 @@ class IterationResult:
             posterior = item.get("Posterior") or item.get("posterior") or {}
 
             ts = TeamStrength(
-                team_id=item.get("TeamId") or item.get("team_id") or uuid.UUID(int=0),
+                team_id=item.get("TeamId") or item.get("team_id") or str(uuid.UUID(int=0)),
                 likelihood=StrengthItem(
                     offensive=float(
                         likelihood.get("Offensive")
@@ -131,7 +132,7 @@ class IterationResult:
                 last_update=item.get("LastUpdate") or item.get("last_update") or "N/A",
                 round_id=item.get("RoundId")
                 or item.get("round_id")
-                or uuid.UUID(int=0),
+                or str(uuid.UUID(int=0)),
                 season_stats=SeasonStats.map_from_grpc(item.get("SeasonStats")),
             )
 
@@ -178,10 +179,10 @@ class IterationResult:
 
         return [
             MatchRound(
-                id=item.get("Id") or item.get("id") or uuid.UUID(int=0),
+                id=item.get("Id") or item.get("id") or str(uuid.UUID(int=0)),
                 round_id=item.get("RoundId")
                 or item.get("round_id")
-                or uuid.UUID(int=0),
+                or str(uuid.UUID(int=0)),
                 home_team_id=item.get("HomeTeamId") or item.get("home_team_id"),
                 away_team_id=item.get("AwayTeamId") or item.get("away_team_id"),
                 home_goals=item.get("HomeGoals", 0),
@@ -243,7 +244,30 @@ class TeamStrength:
     # ^ default_factory
 
     @staticmethod
-    def strength_map(
+    def strength_map_from_list(
+        items: List[TeamStrength],
+    ) -> Dict[Tuple[str, str], List[TeamStrength]]:
+        grouped: DefaultDict[Tuple[str, str], List[TeamStrength]] = defaultdict(list)
+
+        for ts in items:
+            if not ts.team_id or not ts.round_id:
+                raise ValueError("Missing team_id or round_id in strength_map")
+            grouped[(ts.team_id, ts.round_id)].append(ts)
+
+        for lst in grouped.values():
+            lst.sort(key=lambda x: x.last_update, reverse=True)
+
+        return dict(grouped)
+    @staticmethod
+    def strength_map_to_list(
+        strength_map: Dict[Tuple[str, str], List["TeamStrength"]],
+    ) -> List["TeamStrength"]:
+        def as_list(v: Union[List["TeamStrength"], "TeamStrength"]) -> List["TeamStrength"]:
+            return v if isinstance(v, list) else [v]
+
+        return list(chain.from_iterable(as_list(v) for v in strength_map.values()))
+    @staticmethod
+    def strength_map_from_dict(
         items: Dict[str, List[TeamStrength]],
     ) -> Dict[Tuple[str, str], List[TeamStrength]]:
         grouped: DefaultDict[Tuple[str, str], List[TeamStrength]] = defaultdict(list)
@@ -251,13 +275,11 @@ class TeamStrength:
         for team_strengths in items.values():
             for ts in team_strengths:
                 if not ts.team_id or not ts.round_id:
-                    raise ValueError(
-                        "Cannot be [not ts.team_id or not ts.round_id] in strength_map"
-                    )
+                    raise ValueError("Missing team_id or round_id in strength_map")
                 grouped[(ts.team_id, ts.round_id)].append(ts)
 
         for lst in grouped.values():
-            lst.sort(key=lambda x: x.last_updated, reverse=True)
+            lst.sort(key=lambda x: x.last_update, reverse=True)
 
         return dict(grouped)
 
@@ -575,3 +597,4 @@ class InitPrediction:
     list_simulation_ids: List[str]
     prev_round_id_by_round_id: Dict[str, str]
     round_no_by_round_id: Dict[str, int]
+    round_id_by_round_no: Dict[int, str]

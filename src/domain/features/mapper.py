@@ -23,6 +23,11 @@ class Mapper:
         return {r.id: r.round for r in rounds_sorted}
 
     @staticmethod
+    def map_round_id_by_round_no(rounds: List[LeagueRound]) -> Dict[int, str]:
+        rounds_sorted = sorted(rounds, key=lambda x: x.round, reverse=False)
+        return {r.round: r.id for r in rounds_sorted}
+
+    @staticmethod
     def map_prev_round_id_by_round_id(rounds: Dict[str, int]) -> Dict[str, str]:
         """
         Input:  {"r2":2,"r3":3}
@@ -38,7 +43,7 @@ class Mapper:
         prev_by_id: Dict[str, str] = {}
 
         for round_id, round_no in rounds.items():
-            prev_round_id = id_by_no.get(round_no - 1, uuid.UUID(int=0))
+            prev_round_id = id_by_no.get(round_no - 1, str(uuid.UUID(int=0)))
             prev_by_id[round_id] = prev_round_id
 
         return prev_by_id

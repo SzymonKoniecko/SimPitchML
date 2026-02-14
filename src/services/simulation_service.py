@@ -95,12 +95,17 @@ class SimulationService:
 
         list_simulation_ids = await self.get_pending_simulations_to_sync()
         if predict_request.simulation_id in list_simulation_ids:
-            list_simulation_ids.remove(predict_request.simulation_id) # do not use currently proceeded simulation
+            list_simulation_ids.remove(
+                predict_request.simulation_id
+            )  # do not use currently proceeded simulation
 
         all_match_rounds = (
             await self._sportsdata_service.get_match_rounds_by_league_rounds(rounds)
         )
         list_training_data_dataset = []
+
+        round_no_by_round_id = Mapper.map_round_no_by_round_id(rounds)
+        round_id_by_round_no = Mapper.map_round_id_by_round_no(rounds)
 
         if list_simulation_ids is not None and len(list_simulation_ids) != 0:
             for sim_id in list_simulation_ids:
@@ -112,18 +117,18 @@ class SimulationService:
                 for it_result in paged_iteration_results.items:
                     tmp_dataset = TrainingBuilder.build_dataset(
                         iteration_result=it_result,
-                        league_rounds=rounds,
                         match_rounds=await self._sportsdata_service.concat_match_rounds_by_simulated_match_rounds(
                             all_match_rounds=all_match_rounds,
                             simulated_match_rounds=it_result.simulated_match_rounds,
                         ),
                         prev_round_id_by_round_id=prev_round_id_by_round_id,
-                        league_avg=predict_request.league_avg_strength
+                        round_no_by_round_id=round_no_by_round_id,
+                        round_id_by_round_no=round_id_by_round_no,
+                        league_avg=predict_request.league_avg_strength,
                     )
-                    list_training_data_dataset.extend(  # stays in the single list
+                    list_training_data_dataset.extend(  # extend() because of stays in the single list
                         tmp_dataset
                     )
-        round_no_by_round_id = Mapper.map_round_no_by_round_id(rounds)
         training_splitted_dataset = TrainingSplit.define_train_split(
             dataset=list_training_data_dataset,
             round_no_by_round_id=round_no_by_round_id,
@@ -136,6 +141,7 @@ class SimulationService:
             list_simulation_ids,
             prev_round_id_by_round_id,
             round_no_by_round_id,
+            round_id_by_round_no,
         )
 
     async def run_all_overview_scenario(self):

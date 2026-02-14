@@ -139,22 +139,28 @@ class XgboostService:
             simulated_match_rounds=None,
         )
         iteration_result.simulated_match_rounds = []
-        strength_map = TeamStrength.strength_map(predictRequest.team_strengths)
+        strength_map = TeamStrength.strength_map_from_dict(
+            predictRequest.team_strengths
+        )
         for match_round in predictRequest.matches_to_simulate:
             prev_round_id = init_prediction.prev_round_id_by_round_id.get(
-                match_round.round_id, tu_cos_dla_pierwszeog
+                match_round.round_id, str(uuid.UUID(int=0))
             )
             home_strength = TrainingBuilder.get_strength_or_fallback(
                 strength_map,
                 init_prediction.round_no_by_round_id,
-                match_round.home_team_id,
+                init_prediction.round_id_by_round_no,
+                match_round,
+                True,
                 prev_round_id,
                 league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7),
             )
             away_strength = TrainingBuilder.get_strength_or_fallback(
                 strength_map,
                 init_prediction.round_no_by_round_id,
-                match_round.away_team_id,
+                init_prediction.round_id_by_round_no,
+                match_round,
+                False,
                 prev_round_id,
                 league_avg_strength=getattr(predictRequest, "league_avg_strength", 1.7),
             )
