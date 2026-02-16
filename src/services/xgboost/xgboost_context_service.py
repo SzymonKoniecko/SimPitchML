@@ -33,9 +33,12 @@ class XgBoostContextService:
 
     def _model_filename(self, *, league_id: str, home_or_away: str) -> str:
         return f"xgboost_{home_or_away}_{league_id}.{MODEL_EXT}"
-
+    def _model_filename_any(self) -> str:
+        return f"xgboost_*.{MODEL_EXT}"
     def _meta_filename(self, *, league_id: str) -> str:
         return f"{META_PREFIX}_{league_id}.{META_EXT}"
+    def _meta_filename_any(self) -> str:
+        return f"{META_PREFIX}_*.{META_EXT}"
 
     # ---------- metadata ----------
 
@@ -136,3 +139,20 @@ class XgBoostContextService:
             feature_schema=schema,
             last_overview_created_date=last_overview_created_date,
         )
+    
+    def delete_models(self, league_id: Optional[str] = None, with_meta: bool = False) -> int:
+        
+        patterns = list()
+        if league_id:
+            patterns.append(self._model_filename(league_id=league_id, home_or_away="home"))
+            patterns.append(self._model_filename(league_id=league_id, home_or_away="away"))
+            if with_meta:
+                patterns.append(self._meta_filename(league_id))
+                
+        else:
+            patterns.append(self._model_filename_any())
+            patterns.append(self._meta_filename_any())
+
+        return self.repo.delete_by_directory(patterns)
+    def list_all_files(self, text_contains: str) -> List[str]:
+        return [f for f in self.repo.list_all_files() if text_contains in f]

@@ -54,3 +54,23 @@ class SynchronizationService(SynchronizationPort):
             payload.append(_json_ready(asdict(sync)))
 
         self._repo.save(filename=filename, data=payload)
+
+    def delete_synchronization(self, synchronization_list: List[Synchronization]) -> None:
+        def _json_ready(obj: Any) -> Any:
+            if isinstance(obj, datetime):
+                return obj.isoformat()
+            if isinstance(obj, list):
+                return [_json_ready(x) for x in obj]
+            if isinstance(obj, dict):
+                return {k: _json_ready(v) for k, v in obj.items()}
+            return obj
+                
+        filename = f"sync.{EXTENSION}"
+
+        payload: List[Dict[str, Any]] = []
+        for sync in synchronization_list:
+            if not is_dataclass(sync):
+                raise TypeError(f"Expected dataclass Synchronization, got {type(sync).__name__}")
+            payload.append(_json_ready(asdict(sync)))
+        self._repo.delete(filename=filename)
+        self._repo.save(filename=filename, data=payload) # will save the "default" state

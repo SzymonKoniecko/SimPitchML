@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Body
 from src.core import get_logger
 from src.di.ports.synchronization_port import SynchronizationPort
@@ -82,7 +83,7 @@ async def get_iteration_results(
         ],
     }
 
-
+#obsolete?
 @router.get("/simulations/sync")
 async def get_pending_simulations_to_sync(
     service: SimulationService = Depends(get_simulation_service),
@@ -111,3 +112,60 @@ async def get_synced_simulations(
             for item in result
         ]
     }
+
+
+@router.delete("/simulations/sync")
+async def delete_synced_simulations(
+    service: SimulationService = Depends(get_simulation_service),
+):
+    logger.info("API Request DELETE: /simulations/sync")
+
+    result = (
+        await service.delete_simulations_sync_history()
+    )  # should return the current state of sync.json
+
+    return {
+        "items": [
+            {
+                "added_simulations": item.added_simulations,
+                "last_sync_date": item.last_sync_date,
+            }
+            for item in result
+        ]
+    }
+
+
+@router.delete("/simulations/models")
+async def delete_models(
+    league_id: str,
+    with_meta: Optional[bool] = False,
+    service: SimulationService = Depends(get_simulation_service),
+):
+    logger.info("API Request DELETE: /simulations/models")
+
+    result = await service.delete_models(league_id=league_id, with_meta=with_meta)
+
+    if not result or not result or result == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="Deleted 0 models",
+        )
+
+    return {"deleted items": result}
+
+
+@router.get("/simulations/models")
+async def get_models(
+    service: SimulationService = Depends(get_simulation_service),
+):
+    logger.info("API Request GET: /simulations/models")
+
+    result = service.list_all_files("xgboost")
+
+    if not result or not result or result == 0:
+        raise HTTPException(
+            status_code=404,
+            detail="No models found",
+        )
+
+    return {"models": result}

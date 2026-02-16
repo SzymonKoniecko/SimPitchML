@@ -81,9 +81,10 @@ def get_simulation_service(
     synchronization=Depends(get_synchronization_service),
     sportsdata_service=Depends(get_sportsdata_service),
     xgboost_service=Depends(get_xgboost_service),
+    xgboost_context_service=Depends(get_xgboost_context_service)
 ):
     return SimulationService(
-        engine, iteration_results, synchronization, sportsdata_service, xgboost_service
+        engine, iteration_results, synchronization, sportsdata_service, xgboost_service, xgboost_context_service
     )
 
 def get_predict_grpc_servicer(

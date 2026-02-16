@@ -2,7 +2,7 @@ import json
 import os
 from src.core import get_logger
 from pathlib import Path
-from typing import Any, Optional, Dict, Protocol, Union
+from typing import Any, List, Optional, Dict, Protocol, Union
 
 logger = get_logger(__name__) 
 
@@ -73,3 +73,17 @@ class JsonFileRepository:
         except OSError as e:
             logger.error(f"Error deleting {filename}: {e}")
             return False
+    
+    def delete_by_directory(self, patterns: list) -> int:
+        deleted = 0
+        if len(patterns) > 0:
+            for pattern in patterns:
+                for path in self.storage_path.glob(pattern):
+                    if path.is_file():
+                        if self.delete(path.name):
+                            deleted += 1
+        return deleted
+    
+    def list_all_files(self) -> List[str]:
+        base_dir = self.storage_path
+        return sorted(p.name for p in base_dir.iterdir() if p.is_file())

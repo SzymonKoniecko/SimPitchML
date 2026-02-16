@@ -4,6 +4,7 @@ from typing import AsyncIterator, Dict, List, Optional, Tuple
 from src.core import get_logger
 from src.di.ports.adapters.league_round_port import LeagueRoundPort
 from src.di.ports.sportsdata_service_port import SportsDataServicePort
+from src.di.ports.xgboost.xgboost_context_service_port import XgboostContextServicePort
 from src.di.ports.xgboost.xgboost_service_port import XgboostServicePort
 from src.domain.entities import (
     InitPrediction,
@@ -34,12 +35,14 @@ class SimulationService:
         synchronization: SynchronizationPort,
         sportsdata_service: SportsDataServicePort,
         xgboost_service: XgboostServicePort,
+        xgboost_context_service: XgboostContextServicePort
     ):
         self._simulation_engine = simulation_engine
         self._iteration_results = iteration_results
         self._synchronization = synchronization
         self._sportsdata_service = sportsdata_service
         self._xgboost_service = xgboost_service
+        self._xgboost_context_service = xgboost_context_service
 
     async def run_prediction_stream(
         self, predict_request: PredictRequest
@@ -174,6 +177,7 @@ class SimulationService:
         return result
 
     async def get_pending_simulations_to_sync(self) -> List[str]:
+        
         synch_list = self._synchronization.get_synchronization()
 
         if synch_list is None or len(synch_list) == 0:
@@ -199,3 +203,33 @@ class SimulationService:
         self._synchronization.save_synchronization(synch_list)
 
         return result
+
+    async def delete_simulations_sync_history(self) -> List[str]:
+        synch_list = list()
+        synch_list.append(
+            Synchronization(
+                last_sync_date=datetime(1900, 1, 1),
+                added_simulations=0,
+            )
+        )
+        self._synchronization.delete_synchronization(synch_list)
+        
+        return self._synchronization.get_synchronization()
+
+    async def delete_simulations_sync_history(self) -> List[str]:
+        synch_list = list()
+        synch_list.append(
+            Synchronization(
+                last_sync_date=datetime(1900, 1, 1),
+                added_simulations=0,
+            )
+        )
+        self._synchronization.delete_synchronization(synch_list)
+        
+        return self._synchronization.get_synchronization()
+    
+    async def delete_models(self, league_id: Optional[str] = None, with_meta: bool = False) -> int: 
+        return self._xgboost_context_service.delete_models(league_id=league_id, with_meta=with_meta)
+    
+    def list_all_files(self, text_contains: str) -> List[str]: 
+        return self._xgboost_context_service.list_all_files(text_contains=text_contains)
