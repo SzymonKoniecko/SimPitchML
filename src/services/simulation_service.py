@@ -174,19 +174,28 @@ class SimulationService:
         return result
 
     async def get_pending_simulations_to_sync(self) -> List[str]:
-        synch = self._synchronization.get_synchronization() or Synchronization(
-            last_sync_date=datetime(1900, 1, 1),
-            added_simulations=0,
-        )
+        synch_list = self._synchronization.get_synchronization()
+
+        if synch_list is None or len(synch_list) == 0:
+            synch_list = list()
+            synch_list.append(
+                Synchronization(
+                    last_sync_date=datetime(1900, 1, 1),
+                    added_simulations=0,
+                )
+            )
+
         result = await self._simulation_engine.get_latest_simulationIds_by_date(
-            latest_date=synch.last_sync_date
+            latest_date=synch_list[len(synch_list) - 1].last_sync_date
         )
 
-        self._synchronization.save_synchronization(
+        synch_list.append(
             Synchronization(
                 last_sync_date=datetime.now(),
                 added_simulations=len(result),
             )
         )
+
+        self._synchronization.save_synchronization(synch_list)
 
         return result

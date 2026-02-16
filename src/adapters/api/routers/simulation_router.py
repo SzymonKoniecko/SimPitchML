@@ -1,22 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from src.core import get_logger
+from src.di.ports.synchronization_port import SynchronizationPort
 from src.domain.entities import PredictRequest
 from src.services import SimulationService
-from src.di.services import get_simulation_service
+from src.di.services import get_simulation_service, get_synchronization_service
 
 logger = get_logger(__name__)
 router = APIRouter()
 
+
 @router.post("/simulations/predict")
 async def post_simulation(
     body: PredictRequest = Body(...),
-    service: SimulationService = Depends(get_simulation_service)
+    service: SimulationService = Depends(get_simulation_service),
 ):
     logger.info(f"API Request POST: post_simulation() with body={body}")
-    
+
     result = await service.run_prediction(body)
-    
+
     return {"iterationResults": result}
+
 
 @router.get("/simulations/overviews/all")
 async def get_simulation_overview(
@@ -89,3 +92,22 @@ async def get_pending_simulations_to_sync(
     result = await service.get_pending_simulations_to_sync()
 
     return [{"id": simulation_id} for simulation_id in result]
+
+
+@router.get("/simulations/sync/list")
+async def get_synced_simulations(
+    service: SynchronizationPort = Depends(get_synchronization_service),
+):
+    logger.info("API Request GET: /simulations/sync/list")
+
+    result = service.get_synchronization()
+
+    return {
+        "items": [
+            {
+                "added_simulations": item.added_simulations,
+                "last_sync_date": item.last_sync_date,
+            }
+            for item in result
+        ]
+    }
